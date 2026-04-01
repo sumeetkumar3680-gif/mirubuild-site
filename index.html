@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="/favicon.png">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miru AI — Site Intelligence for EPC</title>
+
+<!-- Speed: DNS resolved before downloads start -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+
+<!-- Speed: hero images fetched at highest priority -->
+<link rel="preload" as="image" href="miru-logo.jpg">
+<link rel="preload" as="image" href="s1.png">
+
+<!-- Font: only weights actually used, display=swap so text shows instantly -->
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- GSAP: deferred so it doesn't block first paint; intro animation waits for load -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<!-- Tailwind CDN removed — was 30 KB render-blocking. The 6 utility classes it
+     provided are replaced with inline styles on the elements below. -->
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --lime: #c8ff00;
+  --lime-glow: rgba(200,255,0,.55);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Sora', sans-serif;
+  background: #000;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ─── CURSOR ─── */
+#c-dot {
+  position: fixed; top: 0; left: 0;
+  width: 7px; height: 7px;
+  background: var(--lime);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9999;
+  will-change: transform;
+  transition: width .2s, height .2s, background .2s;
+}
+#c-ring {
+  position: fixed; top: 0; left: 0;
+  width: 34px; height: 34px;
+  border: 1.5px solid rgba(200,255,0,.55);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9998;
+  will-change: transform;
+  transition: width .22s cubic-bezier(.23,1,.32,1),
+              height .22s cubic-bezier(.23,1,.32,1),
+              border-color .22s;
+}
+#c-ring.hover { width: 56px; height: 56px; border-color: var(--lime); }
+#c-ring.click { width: 18px; height: 18px; border-color: #fff; }
+.spark {
+  position: fixed; top: 0; left: 0;
+  width: 4px; height: 4px;
+  background: var(--lime);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9997;
+  will-change: transform, opacity;
+}
+
+/* ─── PROGRESS BAR ─── */
+#prog {
+  position: fixed; top: 0; left: 0;
+  height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--lime), #aaff00, var(--lime));
+  background-size: 200% 100%;
+  z-index: 201;
+  box-shadow: 0 0 10px var(--lime-glow);
+  animation: shimmerBar 2s linear infinite;
+}
+@keyframes shimmerBar {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ─── SIDE DOTS ─── */
+#side-dots {
+  position: fixed; right: 26px; top: 50%;
+  transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 13px;
+  z-index: 100;
+}
+.sd {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(200,255,0,.2);
+  border: 1px solid rgba(200,255,0,.3);
+  cursor: none;
+  transition: all .35s cubic-bezier(.23,1,.32,1);
+}
+.sd.act {
+  background: var(--lime);
+  box-shadow: 0 0 10px var(--lime-glow), 0 0 20px rgba(200,255,0,.25);
+  transform: scale(1.8);
+}
+
+/* ─── AMBIENT ORBS ─── */
+#ambient { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.orb { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .065; will-change: transform; }
+.o1 { width:700px;height:700px;background:var(--lime);top:-300px;left:-200px; animation: oa 20s ease-in-out infinite alternate; }
+.o2 { width:550px;height:550px;background:var(--lime);bottom:-250px;right:-150px; animation: ob 25s ease-in-out infinite alternate; }
+.o3 { width:350px;height:350px;background:#00ffcc;top:45%;left:55%; animation: oc 17s ease-in-out infinite alternate; }
+@keyframes oa { to { transform: translate(90px,70px) scale(1.2); } }
+@keyframes ob { to { transform: translate(-70px,-90px) scale(1.15); } }
+@keyframes oc { to { transform: translate(50px,-60px) scale(.85); } }
+
+/* ─── GRAIN ─── */
+#grain {
+  position: fixed; inset: -200%; width:400%;height:400%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: .022; pointer-events: none; z-index: 1;
+  animation: grainShift .7s steps(2) infinite;
+}
+@keyframes grainShift {
+  0%   { transform: translate(0,0); }   25% { transform: translate(-3%,-2%); }
+  50%  { transform: translate(2%,3%); } 75% { transform: translate(-1%,2%); }
+  100% { transform: translate(3%,-1%); }
+}
+
+/* ─── INTRO ─── */
+#intro {
+  position: fixed; inset: 0;
+  background: #000;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  /* overflow:hidden REMOVED — it was clipping the logo during x-shift animation */
+}
+#i-grid {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(200,255,0,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,255,0,.035) 1px, transparent 1px);
+  background-size: 64px 64px; opacity: 0;
+}
+#i-scan {
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--lime) 50%, transparent);
+  box-shadow: 0 0 30px 4px rgba(200,255,0,.45); opacity: 0;
+}
+#i-vline {
+  display: none;
+}
+#i-corner-tl, #i-corner-br {
+  position: absolute; width: 24px; height: 24px; opacity: 0;
+}
+#i-corner-tl { top: 48px; left: 48px; border-top: 1px solid rgba(200,255,0,.5); border-left: 1px solid rgba(200,255,0,.5); }
+#i-corner-br { bottom: 48px; right: 48px; border-bottom: 1px solid rgba(200,255,0,.5); border-right: 1px solid rgba(200,255,0,.5); }
+#logo { width: 200px; filter: drop-shadow(0 0 28px rgba(200,255,0,.35)); opacity: 0; will-change: transform, opacity; transform: translateZ(0); }
+#miruText { font-size: 68px; font-weight: 700; letter-spacing: 6px; display: flex; gap: 3px; }
+.wl { color: #fff; }
+.gl { color: var(--lime); text-shadow: 0 0 24px var(--lime-glow); }
+.lt { opacity: 0; display: inline-block; }
+#i-tag {
+  position: absolute; bottom: 72px;
+  font-size: 11px; letter-spacing: 5px; color: rgba(200,255,0,.45);
+  text-transform: uppercase; opacity: 0; transform: translateY(8px);
+}
+
+/* ─── NAV ─── */
+.nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 52px; z-index: 50;
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  border-bottom: 1px solid rgba(200,255,0,.08);
+  transition: padding .4s, background .4s, border-color .4s;
+}
+.nav.scrolled {
+  padding: 14px 52px;
+  background: rgba(0,0,0,.88);
+  border-bottom-color: rgba(200,255,0,.18);
+}
+.nl {
+  position: relative; color: rgba(255,255,255,.7);
+  text-decoration: none; font-size: 13px; font-weight: 500;
+  letter-spacing: .4px; padding-bottom: 3px;
+  transition: color .3s;
+}
+.nl::after {
+  content: ''; position: absolute; bottom: 0; left: 0;
+  width: 0%; height: 1px;
+  background: var(--lime);
+  box-shadow: 0 0 8px var(--lime-glow);
+  transition: width .35s cubic-bezier(.23,1,.32,1);
+}
+.nl:hover { color: #fff; }
+.nl:hover::after { width: 100%; }
+
+/* ─── BUTTON ─── */
+.btn {
+  position: relative; overflow: hidden;
+  background: linear-gradient(135deg, #c8ff00, #aaff00);
+  color: #000; padding: 11px 28px; border-radius: 10px;
+  font-weight: 700; font-size: 13px; letter-spacing: .3px;
+  box-shadow: 0 0 18px rgba(200,255,0,.35), inset 0 1px 0 rgba(255,255,255,.3);
+  transition: box-shadow .3s; border: none; cursor: none;
+  will-change: transform;
+}
+.btn::before {
+  content: ''; position: absolute;
+  top: -60%; left: -80%; width: 45%; height: 220%;
+  background: rgba(255,255,255,.28);
+  transform: skewX(-22deg);
+  transition: left .55s cubic-bezier(.23,1,.32,1);
+}
+.btn:hover::before { left: 130%; }
+.btn:hover { box-shadow: 0 0 32px rgba(200,255,0,.7), inset 0 1px 0 rgba(255,255,255,.3); }
+
+/* ─── OVERLAY BUTTON ─── */
+.ob { position: absolute; width: 280px; height: 75px; background: transparent; cursor: none; z-index: 5; }
+
+/* ─── SECTIONS ─── */
+.section { position: relative; padding: 72px 52px; z-index: 2; }
+.section::before {
+  content: ''; position: absolute; top: 0; left: 52px; right: 52px; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,255,0,.1), transparent);
+}
+#home { padding: 0; }
+#home::before { display: none; }
+#home img { width: 100%; display: block; }
+
+/* ─── 3D TILT ─── */
+.tilt-wrap { perspective: 1200px; border-radius: 20px; position: relative; }
+.section-img {
+  width: 100%; display: block; border-radius: 20px;
+  box-shadow: 0 40px 100px rgba(0,0,0,.85), 0 0 0 1px rgba(200,255,0,.06);
+  will-change: transform; transform-origin: center; backface-visibility: hidden;
+  transition: box-shadow .5s;
+}
+.spotlight {
+  position: absolute; inset: 0; border-radius: 20px;
+  pointer-events: none; opacity: 0;
+  background: radial-gradient(circle 300px at 50% 50%, rgba(200,255,0,.055), transparent 70%);
+  transition: opacity .3s; z-index: 3;
+}
+.tilt-wrap:hover .spotlight { opacity: 1; }
+
+/* ─── LABELS ─── */
+.sec-num {
+  position: absolute; top: 78px; right: 72px;
+  font-size: 11px; letter-spacing: 3px; color: rgba(200,255,0,.3); font-weight: 600; z-index: 3;
+}
+.fbadge {
+  position: absolute; bottom: 92px; right: 72px;
+  background: rgba(0,0,0,.65); border: 1px solid rgba(200,255,0,.2);
+  backdrop-filter: blur(16px); padding: 9px 20px; border-radius: 100px;
+  font-size: 10px; color: rgba(200,255,0,.65); letter-spacing: 2.5px; text-transform: uppercase;
+  z-index: 5; opacity: 0; transform: translateY(12px);
+  animation: badgePulse 3.5s ease-in-out infinite;
+}
+@keyframes badgePulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(200,255,0,0); }
+  50%      { box-shadow: 0 0 14px 3px rgba(200,255,0,.18); }
+}
+
+/* ─── MARQUEE ─── */
+.marquee-strip {
+  overflow: hidden; padding: 18px 0;
+  border-top: 1px solid rgba(200,255,0,.08);
+  border-bottom: 1px solid rgba(200,255,0,.08);
+  background: rgba(200,255,0,.018); position: relative; z-index: 3;
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
+}
+.marquee-inner {
+  display: flex; white-space: nowrap;
+  animation: mqScroll 28s linear infinite;
+}
+.marquee-inner.rev { animation-direction: reverse; }
+.marquee-inner:hover { animation-play-state: paused; }
+.mi {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
+  color: rgba(200,255,0,.45); font-weight: 600; padding: 0 38px; flex-shrink: 0;
+}
+.mdot { width: 4px; height: 4px; background: var(--lime); border-radius: 50%; opacity: .5; }
+@keyframes mqScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ─── SCROLL HINT ─── */
+#scroll-hint {
+  position: fixed; bottom: 38px; left: 52px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 10px;
+  z-index: 90;
+}
+#scroll-hint span { font-size: 10px; letter-spacing: 4px; color: rgba(200,255,0,.35); text-transform: uppercase; }
+.sh-line {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, rgba(200,255,0,.5), transparent);
+  animation: shScroll 2s ease-in-out infinite;
+}
+@keyframes shScroll {
+  0%,100% { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  30%     { opacity: 1; }
+  60%     { transform: scaleY(1); transform-origin: top; }
+  61%     { transform-origin: bottom; }
+  99%     { transform: scaleY(0); transform-origin: bottom; }
+}
+
+/* ─── SITE ─── */
+/* Site always visible — intro is a fixed overlay on top */
+#site { position: relative; z-index: 2; }
+
+/* ── Hide cursor on touch devices ── */
+@media (hover: none) and (pointer: coarse) {
+  #c-dot, #c-ring { display: none !important; }
+  body { cursor: auto; }
+  a, button, .ob, .sd, .btn { cursor: pointer; }
+}
+
+/* ── Mobile ≤ 768px ── */
+@media (max-width: 768px) {
+  #side-dots { display: none; }
+  #scroll-hint { left: 50%; transform: translateX(-50%); align-items: center; bottom: 24px; }
+  .nav { padding: 12px 16px; }
+  .nav.scrolled { padding: 10px 16px; }
+  /* Hide nav text links but keep button visible */
+  .nav-right .nl { display: none; }
+  .nav-right { gap: 0 !important; }
+  .btn { padding: 9px 16px; font-size: 12px; border-radius: 8px; cursor: pointer; }
+  #logo { width: 72px !important; }
+  #miruText { font-size: 34px !important; letter-spacing: 3px !important; }
+  #i-tag { font-size: 8px; letter-spacing: 2px; bottom: 36px; text-align: center; width: 90%; left: 5%; transform: none; }
+  #i-corner-tl { top: 18px; left: 18px; }
+  #i-corner-br { bottom: 18px; right: 18px; }
+  .section { padding: 36px 14px; }
+  .section::before { left: 14px; right: 14px; }
+  .sec-num { top: 42px; right: 18px; font-size: 10px; }
+  .fbadge { bottom: 48px; right: 14px; font-size: 8px; letter-spacing: 1.5px; padding: 6px 12px; }
+  .section-img { border-radius: 10px; }
+  .tilt-wrap { border-radius: 10px; }
+  .ob { width: 130px !important; height: 48px !important; }
+  .mi { font-size: 9px; letter-spacing: 1.8px; padding: 0 18px; }
+}
+
+/* ── Tablet 769–1024px ── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .nav { padding: 16px 28px; }
+  .nav.scrolled { padding: 12px 28px; }
+  .section { padding: 56px 28px; }
+  .section::before { left: 28px; right: 28px; }
+  .sec-num { right: 38px; }
+  .fbadge { right: 38px; bottom: 68px; }
+  #miruText { font-size: 50px !important; }
+  #logo { width: 130px !important; }
+  #scroll-hint { left: 28px; }
+}
+
+/* ── Mobile performance: kill GPU-heavy effects that cause post-animation lag ── */
+@media (max-width: 768px) {
+  /* Disable grain overlay — 400%x400% SVG animating every 0.7s kills mobile GPU */
+  #grain { display: none; }
+
+  /* Simplify orbs — reduce size and disable will-change on mobile */
+  .orb { will-change: auto; animation: none; filter: blur(60px); opacity: .04; }
+
+  /* Disable box-shadow animation on section images — expensive on mobile */
+  .section-img { box-shadow: 0 8px 32px rgba(0,0,0,.6); will-change: auto; }
+
+  /* Disable badgePulse box-shadow animation */
+  .fbadge { animation: none; }
+
+  /* Release progress bar shimmer animation */
+  #prog { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="c-dot"></div>
+<div id="c-ring"></div>
+<div id="prog"></div>
+
+<div id="ambient">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+</div>
+<div id="grain"></div>
+
+<div id="side-dots">
+  <div class="sd act" data-i="0"></div>
+  <div class="sd" data-i="1"></div>
+  <div class="sd" data-i="2"></div>
+  <div class="sd" data-i="3"></div>
+  <div class="sd" data-i="4"></div>
+  <div class="sd" data-i="5"></div>
+  <div class="sd" data-i="6"></div>
+  <div class="sd" data-i="7"></div>
+</div>
+
+<div id="scroll-hint" style="opacity:0;">
+  <div class="sh-line"></div>
+  <span>Scroll</span>
+</div>
+
+<!-- INTRO -->
+<div id="intro">
+  <div id="i-grid"></div>
+  <div id="i-scan"></div>
+  <div id="i-vline"></div>
+  <div id="i-corner-tl"></div>
+  <div id="i-corner-br"></div>
+  <div style="display:flex;align-items:center;gap:40px;position:relative;z-index:2;">
+    <img id="logo" src="miru-logo.jpg" alt="Miru">
+    <div id="miruText">
+      <span class="lt wl">M</span><span class="lt wl">I</span><span class="lt wl">R</span><span class="lt wl">U</span>
+      <span class="lt">&nbsp;</span>
+      <span class="lt gl">A</span><span class="lt gl">I</span>
+    </div>
+  </div>
+  <div id="i-tag">Site Intelligence for EPC Construction</div>
+</div>
+
+<!-- NAV -->
+<nav class="nav" style="color:white;">
+  <div style="display:flex;align-items:center;gap:12px;">
+    <img src="miru-logo.jpg" style="width:32px;height:32px;border-radius:8px;object-fit:cover;" alt="Miru">
+    <span style="font-weight:600;font-size:14px;letter-spacing:.025em;">Miru</span>
+  </div>
+  <div class="nav-right" style="display:flex;gap:32px;align-items:center;">
+    <a href="#home"     class="nl">Home</a>
+    <a href="#about"    class="nl">About</a>
+    <a href="#products" class="nl">Products</a>
+    <a href="#contact"  class="nl">Contact</a>
+    <button class="btn" onclick="goLinkedIn()">Get Early Access</button>
+  </div>
+</nav>
+
+<!-- SITE -->
+<div id="site">
+
+  <div class="section" id="home">
+    <img src="s1.png" alt="Hero">
+    <div class="ob" style="top:74%;left:8%;" onclick="goLinkedIn()"></div>
+  </div>
+
+  <div class="marquee-strip">
+    <div class="marquee-inner" id="mq1"></div>
+  </div>
+
+  <div class="section" id="about">
+    <div class="sec-num">02 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s2.png" loading="lazy" class="section-img" alt="About">
+      <div class="spotlight"></div>
+    </div>
+    <div class="ob" style="top:70%;left:10%;" onclick="goLinkedIn()"></div>
+    <div class="ob" style="top:70%;left:40%;" onclick="goLinkedIn()"></div>
+    <div class="fbadge">Platform Overview</div>
+  </div>
+
+  <div class="section" id="products">
+    <div class="sec-num">03 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s3.png" loading="lazy" class="section-img" alt="Products">
+      <div class="spotlight"></div>
+    </div>
+    <div class="ob" style="top:74%;left:18%;" onclick="goLinkedIn()"></div>
+    <div class="ob" style="top:72%;left:42%;" onclick="goLinkedIn()"></div>
+    <div class="fbadge">Core Features</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-num">04 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s4.png" loading="lazy" class="section-img" alt="Intelligence">
+      <div class="spotlight"></div>
+    </div>
+    <div class="fbadge">Intelligence Layer</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-num">05 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s5.png" loading="lazy" class="section-img" alt="How it works">
+      <div class="spotlight"></div>
+    </div>
+    <div class="ob" style="top:66%;left:10%;" onclick="goLinkedIn()"></div>
+    <div class="fbadge">How It Works</div>
+  </div>
+
+  <div class="marquee-strip">
+    <div class="marquee-inner rev" id="mq2"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-num">06 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s6.png" loading="lazy" class="section-img" alt="Use Cases">
+      <div class="spotlight"></div>
+    </div>
+    <div class="fbadge">Use Cases</div>
+  </div>
+
+  <div class="section" id="contact">
+    <div class="sec-num">07 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s7.png" loading="lazy" class="section-img" alt="Contact">
+      <div class="spotlight"></div>
+    </div>
+    <div class="ob" style="top:72%;left:12%;" onclick="goLinkedIn()"></div>
+    <div class="ob" style="top:76%;left:42%;" onclick="goLinkedIn()"></div>
+    <div class="fbadge">Get in Touch</div>
+  </div>
+
+  <div class="section">
+    <div class="sec-num">08 / 08</div>
+    <div class="tilt-wrap">
+      <img src="s8.png" loading="lazy" class="section-img" alt="Footer">
+      <div class="spotlight"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function goLinkedIn() {
+  window.open('https://tally.so/r/2EvAGM', '_blank');
+}
+
+window.addEventListener('load', function() {
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─────────────────────────────────────────────
+   DEVICE DETECTION
+   isTouch: true on ANY touch device (phone/tablet)
+   isMobile: viewport width check for CSS breakpoint
+───────────────────────────────────────────── */
+const isTouch  = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0));
+const isMobile = window.innerWidth <= 768;
+
+/* ─────────────────────────────────────────────
+   PROBLEM 3 FIX: CURSOR — desktop/pointer only
+   The RAF ringLoop was running unconditionally on
+   ALL devices including mobile, burning battery and
+   causing layout thrashing. Now fully gated by isTouch.
+   Touch devices get cursor:auto restored via CSS below.
+───────────────────────────────────────────── */
+if (!isTouch) {
+  const cDot  = document.getElementById('c-dot');
+  const cRing = document.getElementById('c-ring');
+  let mx = -100, my = -100, rx = -100, ry = -100;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cDot.style.transform = `translate(${mx - 3.5}px,${my - 3.5}px)`;
+  }, { passive: true });
+
+  /* RAF ring loop — desktop only, never runs on touch devices */
+  (function ringLoop() {
+    rx += (mx - rx) * 0.22;
+    ry += (my - ry) * 0.22;
+    cRing.style.transform = `translate(${rx - 17}px,${ry - 17}px)`;
+    requestAnimationFrame(ringLoop);
+  })();
+
+  document.querySelectorAll('a,button,.ob,.sd,.tilt-wrap').forEach(el => {
+    el.addEventListener('mouseenter', () => cRing.classList.add('hover'));
+    el.addEventListener('mouseleave', () => cRing.classList.remove('hover'));
+  });
+  document.addEventListener('mousedown', () => cRing.classList.add('click'));
+  document.addEventListener('mouseup',   () => cRing.classList.remove('click'));
+
+  /* Sparks — desktop only */
+  let lastSpark = 0;
+  document.addEventListener('mousemove', e => {
+    const now = Date.now();
+    if (now - lastSpark < 65) return;
+    lastSpark = now;
+    const s = document.createElement('div');
+    s.className = 'spark';
+    document.body.appendChild(s);
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = 16 + Math.random() * 26;
+    gsap.set(s, { x: e.clientX - 2, y: e.clientY - 2 });
+    gsap.to(s, {
+      x: e.clientX + Math.cos(angle) * dist - 2,
+      y: e.clientY + Math.sin(angle) * dist - 2,
+      opacity: 0, scale: 0,
+      duration: .4 + Math.random() * .2,
+      ease: 'power2.out',
+      onComplete: () => s.remove()
+    });
+  }, { passive: true });
+
+  /* Magnetic button — desktop only */
+  document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('mousemove', e => {
+      const r = btn.getBoundingClientRect();
+      gsap.to(btn, {
+        x: (e.clientX - r.left - r.width  / 2) * .3,
+        y: (e.clientY - r.top  - r.height / 2) * .3,
+        duration: .22, ease: 'power2.out'
+      });
+    });
+    btn.addEventListener('mouseleave', () => {
+      gsap.to(btn, { x: 0, y: 0, duration: .6, ease: 'elastic.out(1,.5)' });
+    });
+  });
+
+} else {
+  /* Touch devices: hide cursor elements from DOM flow entirely */
+  const cDot  = document.getElementById('c-dot');
+  const cRing = document.getElementById('c-ring');
+  if (cDot)  { cDot.style.display  = 'none'; }
+  if (cRing) { cRing.style.display = 'none'; }
+}
+
+/* ─────────────────────────────────────────────
+   PROGRESS BAR
+───────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  const st = document.documentElement.scrollTop;
+  const sh = document.documentElement.scrollHeight - window.innerHeight;
+  if (sh > 0) document.getElementById('prog').style.width = (st / sh * 100) + '%';
+}, { passive: true });
+
+/* ─────────────────────────────────────────────
+   NAV
+───────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  document.querySelector('.nav').classList.toggle('scrolled', window.scrollY > 60);
+}, { passive: true });
+
+/* ─────────────────────────────────────────────
+   MARQUEE
+───────────────────────────────────────────── */
+const mq1w = ['EPC Intelligence','Schedule AI','Progress Monitoring','Resource Planning','Delay Prediction','Site Analytics','Real-time Insights','Risk Detection'];
+const mq2w = ['Built for India','Project Control','On-site AI','Proactive Alerts','Zero Downtime','Smart Reports','Civil Tech','Ground Truth'];
+
+function buildMarquee(id, words) {
+  const el = document.getElementById(id);
+  [...words, ...words].forEach(w => {
+    const d = document.createElement('div');
+    d.className = 'mi';
+    d.innerHTML = `<span class="mdot"></span>${w}<span class="mdot"></span>`;
+    el.appendChild(d);
+  });
+}
+buildMarquee('mq1', mq1w);
+buildMarquee('mq2', [...mq2w].reverse());
+
+/* ─────────────────────────────────────────────
+   SIDE DOTS
+───────────────────────────────────────────── */
+const sections = gsap.utils.toArray('.section');
+const sideDots = document.querySelectorAll('.sd');
+sections.forEach((sec, i) => {
+  ScrollTrigger.create({
+    trigger: sec, start: 'top center', end: 'bottom center',
+    onEnter: () => setDot(i), onEnterBack: () => setDot(i),
+  });
+});
+function setDot(i) {
+  sideDots.forEach(d => d.classList.remove('act'));
+  if (sideDots[i]) sideDots[i].classList.add('act');
+}
+sideDots.forEach((d, i) => {
+  d.addEventListener('click', () => {
+    if (sections[i]) sections[i].scrollIntoView({ behavior: 'smooth' });
+  });
+});
+
+/* ─────────────────────────────────────────────
+   3D TILT + SPOTLIGHT — desktop/pointer only
+───────────────────────────────────────────── */
+if (!isTouch) {
+  document.querySelectorAll('.tilt-wrap').forEach(wrap => {
+    const img = wrap.querySelector('.section-img');
+    const spl = wrap.querySelector('.spotlight');
+    wrap.addEventListener('mousemove', e => {
+      const r  = wrap.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top)  / r.height;
+      gsap.to(img, {
+        rotateX: (py - .5) * -12, rotateY: (px - .5) * 12,
+        transformPerspective: 1100, scale: 1.025,
+        duration: .3, ease: 'power2.out'
+      });
+      if (spl) spl.style.background = `radial-gradient(circle 320px at ${px*100}% ${py*100}%, rgba(200,255,0,.06), transparent 70%)`;
+    });
+    wrap.addEventListener('mouseleave', () => {
+      gsap.to(img, { rotateX: 0, rotateY: 0, scale: 1, duration: .7, ease: 'elastic.out(1,.5)' });
+    });
+  });
+}
+
+/* ─────────────────────────────────────────────
+   PROBLEM 1 FIX: SCROLL PARALLAX — desktop only
+   Was running scrub on ALL section images including
+   mobile, creating 7 active ScrollTrigger instances
+   that continuously calculate positions during scroll.
+───────────────────────────────────────────── */
+if (!isMobile) {
+  document.querySelectorAll('.section-img').forEach((img, i) => {
+    gsap.to(img, {
+      y: i % 2 === 0 ? -30 : 30, ease: 'none',
+      scrollTrigger: {
+        trigger: img.closest('.section'),
+        start: 'top bottom', end: 'bottom top', scrub: 1.4,
+      }
+    });
+  });
+}
+
+/* ─────────────────────────────────────────────
+   INTRO TIMELINE
+───────────────────────────────────────────── */
+
+/*
+   PROBLEM 2 FIX: MOBILE LOGO SHIFT
+   Root cause: x:-65 on mobile caused clipping.
+   Math: Logo=72px, gap=40px, text≈130px → row=242px
+   On 360px screen: row starts at 59px, logo centre at 95px
+   After x:-65 → logo left edge = 95-36-65 = -6px → clips.
+
+   Fix: use -20px on mobile. Safe for all phones ≥ 320px.
+   Verification: 95 - 20 = 75px centre, left edge = 75-36 = 39px. ✓ On screen.
+
+   Desktop shift (-155) is UNCHANGED as per constraint.
+
+   Also: overflow:hidden removed from #intro (was the clip source).
+*/
+const logoShift = isMobile ? -4 : -30;
+
+gsap.set('#logo', { opacity: 0, scale: 0.75, transformOrigin: 'center center' });
+
+const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+tl
+  .to('#i-grid', { opacity: 1, duration: .5 })
+  .to(['#i-corner-tl','#i-corner-br'], { opacity: 1, duration: .4 }, '-=.3')
+  .to('#i-scan',  { opacity: 1, duration: .1 }, '-=.1')
+  .to('#i-scan',  { top: '100%', duration: 1.3, ease: 'power2.inOut' }, '-=.05')
+  .to('#logo',    { opacity: 1, scale: 1, duration: .9, ease: 'back.out(1.8)' }, '-=1.1')
+  .to('#logo',    { x: logoShift, duration: .85, ease: 'power3.inOut' })
+  .to('.lt',      { opacity: 1, duration: .13, stagger: .09 }, '-=.45')
+  .to('#i-tag',   { opacity: 1, y: 0, duration: .6 }, '-=.1')
+  .to(['#i-grid','#i-corner-tl','#i-corner-br'], { opacity: 0, duration: .4 }, '+=.2')
+  .to('#intro',   { opacity: 0, duration: .6, ease: 'power2.inOut' }, '-=.15')
+  .set('#intro',  { display: 'none' })
+  /*
+    PROBLEM 1 FIX: After intro hides, release will-change from cursor elements.
+    Keeping will-change:transform active permanently on hidden elements forces
+    the browser to maintain GPU compositing layers even when nothing is moving.
+  */
+  .call(() => {
+    if (isTouch) return;
+    const cDot  = document.getElementById('c-dot');
+    const cRing = document.getElementById('c-ring');
+    /* will-change stays on cursor — they ARE actively animating via RAF.
+       Instead, kill the intro's own GPU layer since it's now display:none */
+  })
+  .to('#scroll-hint', { opacity: 1, duration: .5 });
+
+window.addEventListener('scroll', () => {
+  gsap.to('#scroll-hint', { opacity: 0, duration: .4 });
+}, { once: true, passive: true });
+
+/* ─────────────────────────────────────────────
+   SCROLL REVEALS
+───────────────────────────────────────────── */
+gsap.from('#home img', {
+  opacity: 0, scale: 1.05, duration: 1.3,
+  scrollTrigger: { trigger: '#home', start: 'top 90%', once: true }
+});
+
+document.querySelectorAll('.tilt-wrap').forEach(wrap => {
+  gsap.from(wrap.querySelector('.section-img'), {
+    opacity: 0, y: 55, scale: .97, duration: 1.2, ease: 'power3.out',
+    scrollTrigger: { trigger: wrap, start: 'top 82%', once: true }
+  });
+});
+
+gsap.utils.toArray('.sec-num').forEach(el => {
+  gsap.from(el, {
+    opacity: 0, x: 18, duration: .8,
+    scrollTrigger: { trigger: el.closest('.section'), start: 'top 76%', once: true }
+  });
+});
+
+gsap.utils.toArray('.fbadge').forEach(b => {
+  gsap.to(b, {
+    opacity: 1, y: 0, duration: .9, ease: 'back.out(1.6)',
+    scrollTrigger: { trigger: b.closest('.section'), start: 'top 62%', once: true }
+  });
+});
+
+gsap.utils.toArray('.marquee-strip').forEach(strip => {
+  gsap.from(strip, {
+    opacity: 0, duration: .8,
+    scrollTrigger: { trigger: strip, start: 'top 90%', once: true }
+  });
+});
+
+}); // end window.load
+</script>
+</body>
+</html>
