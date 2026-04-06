@@ -551,23 +551,92 @@ body{
 @media (max-width:768px){
   #side-dots{display:none}
   #scroll-hint{left:50%;transform:translateX(-50%);align-items:center;bottom:24px}
+
+  /* ── NAV: tight, no gap ── */
   .nav{padding:12px 16px;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(0,0,0,.92)!important}
   .nav.scrolled{padding:10px 16px;background:rgba(0,0,0,.96)!important}
   .nav-right .nl{display:none}
   .nav-right{gap:0!important}
-  .btn{padding:9px 16px;font-size:12px;border-radius:8px;cursor:pointer}
-  #logo{width:52px!important}
-  #miruText{font-size:28px!important;letter-spacing:2px!important}
-  #i-tag{font-size:8px;letter-spacing:2px;bottom:32px;text-align:center;width:90%;left:5%}
+
+  /* ── Buttons: restore normal size on mobile (hero override below) ── */
+  .btn{padding:10px 20px;font-size:13px;border-radius:10px;cursor:pointer}
+
+  /* ── Intro logo animation fixes ── */
+  #logo{width:44px!important}
+  #miruText{font-size:26px!important;letter-spacing:1.5px!important;gap:2px!important}
+  /* bring tagline up significantly on mobile */
+  #i-tag{font-size:8px;letter-spacing:2px;bottom:72px;text-align:center;width:90%;left:5%}
   #i-corner-tl{top:16px;left:16px} #i-corner-br{bottom:16px;right:16px}
-  .section{padding:36px 14px} .section::before{left:14px;right:14px}
+  /* tighten gap between logo and text in intro */
+  #intro > div[style]{gap:16px!important}
+
+  /* ── HERO SECTION: stacked layout, no overlap ── */
+  #live-hero{
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:flex-start;
+    padding:72px 20px 32px;
+    min-height:100svh;
+    gap:0;
+  }
+  /* hero left text takes full width, sits on top */
+  .hero-left{
+    position:relative;
+    z-index:3;
+    max-width:100%;
+    width:100%;
+    padding-bottom:0;
+  }
+  .hero-h1-live{font-size:clamp(30px,8vw,44px);margin-bottom:16px;}
+  .hero-sub-live{font-size:14px;margin-bottom:28px;max-width:100%;}
+  .hero-eyebrow-live{font-size:10px;margin-bottom:14px;}
+  .live-badge{font-size:10px;padding:5px 12px 5px 8px;margin-bottom:18px;}
+  /* hero Get Started button on mobile – normal size, full width */
+  .hero-cta-live .btn{
+    padding:13px 28px !important;
+    font-size:14px !important;
+    width:100%;
+    text-align:center;
+    justify-content:center;
+  }
+  .hero-cta-live{flex-direction:column;align-items:flex-start;gap:12px;width:100%;}
+  .hero-cta-note-live{font-size:11px;}
+
+  /* city image: push below text, smaller, centred */
+  .hero-city-img-wrap{
+    position:relative !important;
+    right:auto !important;
+    top:auto !important;
+    transform:none !important;
+    width:100% !important;
+    margin-top:16px;
+    /* simplified mask: just fade bottom so it doesn't hard-cut */
+    -webkit-mask-image:linear-gradient(to bottom, black 40%, transparent 100%) !important;
+    mask-image:linear-gradient(to bottom, black 40%, transparent 100%) !important;
+  }
+  #hero-city-img{
+    width:100%;
+    max-height:52vw;
+    object-fit:cover;
+    object-position:center top;
+  }
+
+  /* hero grid: left side only */
+  .hero-grid{opacity:.3}
+  .hero-scan-line{display:none}
+
+  /* ── Gap fixes: sections tight against hero ── */
+  .section{padding:28px 14px}
+  .section::before{left:14px;right:14px}
+  .hero-text{padding:72px 20px 48px;min-height:auto;}
+
+  /* ── Other section fixes ── */
   .sec-num{top:42px;right:18px;font-size:10px}
-  .fbadge{bottom:48px;right:14px;font-size:8px;letter-spacing:1.5px;padding:6px 12px}
-  .section-img{border-radius:10px} .tilt-wrap{border-radius:10px}
+  .fbadge{bottom:48px;right:14px;font-size:8px;letter-spacing:1.5px;padding:6px 12px;animation:none}
+  .section-img{border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.6);will-change:auto}
+  .tilt-wrap{border-radius:10px}
   .ob{width:130px!important;height:48px!important}
   .mi{font-size:9px;letter-spacing:1.8px;padding:0 18px}
-  /* hero text */
-  .hero-text{padding:90px 20px 60px;min-height:auto}
   /* drone */
   .drone-text{font-size:clamp(20px,5.5vw,32px);white-space:normal;max-width:86vw}
   #drone-svg{width:50px;height:50px}
@@ -575,8 +644,6 @@ body{
   .drone-label{left:20px;top:32px}
   #grain{display:none}
   .orb{will-change:auto;animation:none;filter:blur(60px);opacity:.04}
-  .section-img{box-shadow:0 8px 32px rgba(0,0,0,.6);will-change:auto}
-  .fbadge{animation:none}
   #prog{animation:none}
 }
 
@@ -678,6 +745,12 @@ body{
   font-size:clamp(14px,1.4vw,17px);color:rgba(255,255,255,.5);line-height:1.75;margin-bottom:40px;max-width:460px;
 }
 .hero-cta-live{display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.hero-cta-live .btn{
+  padding:16px 40px;
+  font-size:15px;
+  border-radius:12px;
+  letter-spacing:.5px;
+}
 .hero-cta-note-live{font-size:12px;color:rgba(255,255,255,.3);letter-spacing:.5px;}
 .live-badge{
   display:inline-flex;align-items:center;gap:7px;
@@ -818,7 +891,7 @@ body{
   .pcard,.cs-pill,.join-btn{cursor:pointer}
 }
 @media (max-width:768px){
-  #live-hero{padding:100px 20px 60px;min-height:100svh;}
+  /* live-hero mobile handled above */
   .hero-stats{display:none}
   .hero-h1-live{font-size:clamp(32px,8vw,48px)}
   #products-section{padding:60px 20px}
