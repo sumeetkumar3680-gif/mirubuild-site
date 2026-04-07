@@ -570,14 +570,22 @@ body{
   /* tighten gap between logo and text in intro */
   #intro > div[style]{gap:16px!important}
 
-  /* ── HERO SECTION: stacked layout, no overlap ── */
+  /* ── HERO SECTION: stacked layout, edge-to-edge, no black gaps ── */
   #live-hero{
     flex-direction:column;
     align-items:flex-start;
     justify-content:flex-start;
-    padding:72px 20px 32px;
+    /* remove all side padding so bg fills edge-to-edge */
+    padding:0;
+    margin:0;
     min-height:100svh;
+    width:100vw;
+    max-width:100vw;
     gap:0;
+    /* match the desktop hero bg so no black gap shows */
+    background:radial-gradient(ellipse 120% 120% at 60% 50%, #0a120a 0%, #060906 50%, #040704 100%);
+    overflow:hidden;
+    box-sizing:border-box;
   }
   /* hero left text takes full width, sits on top */
   .hero-left{
@@ -585,7 +593,8 @@ body{
     z-index:3;
     max-width:100%;
     width:100%;
-    padding-bottom:0;
+    padding:72px 20px 16px 20px;
+    box-sizing:border-box;
   }
   .hero-h1-live{font-size:clamp(30px,8vw,44px);margin-bottom:16px;}
   .hero-sub-live{font-size:14px;margin-bottom:28px;max-width:100%;}
@@ -602,23 +611,26 @@ body{
   .hero-cta-live{flex-direction:column;align-items:flex-start;gap:12px;width:100%;}
   .hero-cta-note-live{font-size:11px;}
 
-  /* city image: push below text, smaller, centred */
+  /* city image: below text, bleeds edge-to-edge */
   .hero-city-img-wrap{
     position:relative !important;
     right:auto !important;
     top:auto !important;
     transform:none !important;
-    width:100% !important;
-    margin-top:16px;
-    /* simplified mask: just fade bottom so it doesn't hard-cut */
-    -webkit-mask-image:linear-gradient(to bottom, black 40%, transparent 100%) !important;
-    mask-image:linear-gradient(to bottom, black 40%, transparent 100%) !important;
+    width:100vw !important;
+    margin-left:0 !important;
+    margin-top:0;
+    flex:1;
+    -webkit-mask-image:linear-gradient(to bottom, black 30%, transparent 100%) !important;
+    mask-image:linear-gradient(to bottom, black 30%, transparent 100%) !important;
   }
   #hero-city-img{
     width:100%;
-    max-height:52vw;
+    height:100%;
+    min-height:44vw;
+    display:block;
     object-fit:cover;
-    object-position:center top;
+    object-position:center 25%;
   }
 
   /* hero grid: left side only */
