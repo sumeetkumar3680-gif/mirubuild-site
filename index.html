@@ -367,121 +367,503 @@ body{
 }
 
 /* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   DRONE SECTION (new)
+   FEATURE SHOWCASE SECTION (Velora-style sticky scroll)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-.drone-wrapper{
+.feature-showcase{
   position:relative;z-index:2;
-  height:350vh; /* more scroll distance = smoother raster scan */
   border-top:1px solid rgba(200,255,0,.06);
 }
-.drone-stage{
-  position:sticky;
-  top:0;height:100vh;
-  overflow:hidden;
+.fs-header{
+  text-align:center;
+  padding:80px 52px 60px;
 }
-
-/* subtle dark panel behind drone stage */
-.drone-stage::before{
+.fs-eyebrow{
+  font-size:11px;letter-spacing:5px;text-transform:uppercase;
+  color:rgba(200,255,0,.65);margin-bottom:16px;display:block;
+}
+.fs-heading{
+  font-size:clamp(28px,4vw,54px);font-weight:700;
+  letter-spacing:-0.03em;line-height:1.1;margin-bottom:14px;
+}
+.fs-heading .acc{color:var(--lime);text-shadow:0 0 30px rgba(200,255,0,.25)}
+.fs-sub{
+  font-size:clamp(13px,1.2vw,16px);color:rgba(255,255,255,.4);
+  line-height:1.7;max-width:500px;margin:0 auto;
+}
+.fs-body{
+  display:grid;grid-template-columns:1fr 1fr;
+  min-height:100vh;
+  position:relative;
+}
+/* LEFT: sticky feature list */
+.fs-left{
+  position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:24px 28px 24px 36px;
+  border-right:1px solid rgba(200,255,0,.07);
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:none;
+  min-width:0; /* prevent grid blowout */
+}
+.fs-left::-webkit-scrollbar{display:none;}
+.fs-left::before{
   content:'';position:absolute;inset:0;
-  background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(200,255,0,.04),transparent 70%);
-  pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 70% 60% at 20% 50%,rgba(200,255,0,.03),transparent 70%);
+  pointer-events:none;
+}
+.fs-section-label{
+  font-size:8px;letter-spacing:3.5px;text-transform:uppercase;
+  color:rgba(200,255,0,.3);
+  margin-bottom:10px;
+  margin-top:4px;
+}
+.fs-feature-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 12px;border-radius:12px;margin-bottom:3px;
+  cursor:pointer;
+  border:1px solid transparent;
+  transition:all .35s cubic-bezier(.23,1,.32,1);
+  position:relative;overflow:hidden;
+}
+.fs-feature-item::before{
+  content:'';position:absolute;inset:0;border-radius:12px;
+  background:linear-gradient(135deg,rgba(200,255,0,.06),transparent 60%);
+  opacity:0;transition:opacity .35s;
+}
+.fs-feature-item.active{
+  background:rgba(200,255,0,.05);
+  border-color:rgba(200,255,0,.18);
+  box-shadow:0 0 0 1px rgba(200,255,0,.06);
+}
+.fs-feature-item.active::before{opacity:1}
+.fs-feature-item:hover:not(.active){
+  background:rgba(255,255,255,.025);
+  border-color:rgba(200,255,0,.08);
+}
+/* ── Icon with micro-animation ── */
+.fs-feat-icon{
+  width:36px;height:36px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(200,255,0,.12);
+  font-size:16px;
+  transition:background .35s,border-color .35s,box-shadow .35s,transform .35s cubic-bezier(.23,1,.32,1);
+  position:relative;overflow:hidden;
+}
+/* shimmer sweep on active */
+.fs-feat-icon::after{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(105deg,transparent 30%,rgba(200,255,0,.18) 50%,transparent 70%);
+  transform:translateX(-100%);
+  transition:none;
+}
+.fs-feature-item.active .fs-feat-icon::after{
+  animation:iconShimmer .6s ease forwards;
+}
+@keyframes iconShimmer{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
+.fs-feature-item.active .fs-feat-icon{
+  background:rgba(200,255,0,.1);
+  border-color:rgba(200,255,0,.35);
+  box-shadow:0 0 14px rgba(200,255,0,.18);
+  transform:scale(1.08);
+}
+.fs-feat-text{min-width:0;flex:1;}
+.fs-feat-title{
+  font-size:13px;font-weight:700;color:rgba(255,255,255,.75);
+  margin-bottom:2px;letter-spacing:-.01em;
+  transition:color .3s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.fs-feature-item.active .fs-feat-title{color:#fff}
+.fs-feat-desc{
+  font-size:11px;color:rgba(255,255,255,.32);line-height:1.45;
+  transition:color .3s, max-height .35s ease, opacity .35s ease;
+  max-height:0;opacity:0;overflow:hidden;
+}
+/* Only show desc on active item — saves vertical space */
+.fs-feature-item.active .fs-feat-desc{
+  color:rgba(255,255,255,.52);
+  max-height:60px;opacity:1;
+}
+/* Active indicator bar */
+.fs-feat-bar{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:2px;height:0%;background:var(--lime);
+  box-shadow:0 0 8px rgba(200,255,0,.7);
+  border-radius:0 2px 2px 0;
+  transition:height .4s cubic-bezier(.23,1,.32,1);
+}
+.fs-feature-item.active .fs-feat-bar{height:60%}
+
+/* ── Animated icon decorations for specific features ── */
+/* mic pulse ring — panel 3 icon */
+.icon-mic-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
+.icon-mic-wrap::before{
+  content:'';position:absolute;
+  width:26px;height:26px;border-radius:50%;
+  border:1.5px solid rgba(200,255,0,.0);
+  transition:border-color .3s;
+}
+.fs-feature-item.active .icon-mic-wrap::before{
+  border-color:rgba(200,255,0,.4);
+  animation:micPulse 1.4s ease-in-out infinite;
+}
+@keyframes micPulse{
+  0%,100%{transform:scale(1);opacity:.5}
+  50%{transform:scale(1.45);opacity:0}
 }
 
-/* section label top-left */
-.drone-label{
-  position:absolute;top:48px;left:52px;
-  font-size:10px;letter-spacing:5px;color:rgba(200,255,0,.4);
-  text-transform:uppercase;z-index:4;
+/* wave bars — voice note icon */
+.icon-wave{display:flex;align-items:center;gap:2px;height:16px;}
+.icon-wave span{
+  display:block;width:3px;border-radius:2px;
+  background:rgba(200,255,0,.55);
+  height:4px;
+  transition:height .3s;
+}
+.fs-feature-item.active .icon-wave span:nth-child(1){animation:wave 1s ease-in-out infinite .0s}
+.fs-feature-item.active .icon-wave span:nth-child(2){animation:wave 1s ease-in-out infinite .15s}
+.fs-feature-item.active .icon-wave span:nth-child(3){animation:wave 1s ease-in-out infinite .3s}
+.fs-feature-item.active .icon-wave span:nth-child(4){animation:wave 1s ease-in-out infinite .45s}
+.fs-feature-item.active .icon-wave span:nth-child(5){animation:wave 1s ease-in-out infinite .6s}
+@keyframes wave{
+  0%,100%{height:4px}
+  50%{height:14px}
 }
 
-/* main text that chars reveal */
-.drone-text{
-  position:absolute;
-  top:50%;left:50%;
-  transform:translate(-50%,-50%);
-  font-size:clamp(28px,4.5vw,58px);
-  font-weight:700;
-  letter-spacing:-0.02em;
-  white-space:nowrap;
-  text-align:center;
-  z-index:2;
-  /* prevent text from overflowing on small screens */
-  max-width:92vw;
-  white-space:normal;
-  text-align:center;
-  line-height:1.15;
-}
-.drone-char{
+/* translate spin — multilingual */
+.icon-globe{
   display:inline-block;
+  transition:transform .5s cubic-bezier(.23,1,.32,1);
+}
+.fs-feature-item.active .icon-globe{
+  animation:globeSpin .8s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes globeSpin{
+  0%{transform:rotateY(0)}
+  40%{transform:rotateY(180deg)}
+  100%{transform:rotateY(360deg)}
+}
+
+/* robot blink — AI follow-ups */
+.icon-robot{
+  display:inline-block;
+  transition:transform .4s;
+}
+.fs-feature-item.active .icon-robot{
+  animation:robotPop .5s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes robotPop{
+  0%{transform:scale(1) rotate(0)}
+  30%{transform:scale(1.3) rotate(-8deg)}
+  60%{transform:scale(.9) rotate(5deg)}
+  100%{transform:scale(1.08) rotate(0)}
+}
+
+/* map pin bounce — work front */
+.icon-map{display:inline-block;}
+.fs-feature-item.active .icon-map{
+  animation:pinBounce .6s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes pinBounce{
+  0%{transform:translateY(0)}
+  25%{transform:translateY(-6px)}
+  55%{transform:translateY(2px)}
+  75%{transform:translateY(-3px)}
+  100%{transform:translateY(0)}
+}
+
+/* dashboard chart rise */
+.icon-chart{display:inline-block;}
+.fs-feature-item.active .icon-chart{
+  animation:chartRise .5s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes chartRise{
+  0%{transform:translateY(4px);opacity:.5}
+  100%{transform:translateY(0);opacity:1}
+}
+
+/* scale balance tip */
+.icon-scale{display:inline-block;}
+.fs-feature-item.active .icon-scale{
+  animation:scaleTip .7s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes scaleTip{
+  0%{transform:rotate(0)}
+  30%{transform:rotate(-12deg)}
+  65%{transform:rotate(8deg)}
+  100%{transform:rotate(0)}
+}
+
+/* report slide-in */
+.icon-report{display:inline-block;}
+.fs-feature-item.active .icon-report{
+  animation:reportSlide .5s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes reportSlide{
+  0%{transform:translateX(-4px);opacity:.4}
+  100%{transform:translateX(0);opacity:1}
+}
+
+/* person profile pop */
+.icon-person{display:inline-block;}
+.fs-feature-item.active .icon-person{
+  animation:personPop .5s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes personPop{
+  0%{transform:scale(.7);opacity:.3}
+  60%{transform:scale(1.15)}
+  100%{transform:scale(1.08)}
+}
+
+/* RIGHT: scrolling visual panels */
+.fs-right{
+  position:relative;
+  padding:40px 52px 40px 48px;
+}
+.fs-panel{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  /* hidden state */
   opacity:0;
-  filter:blur(8px);
-  /* No CSS transition — JS drives this every frame for a true light-source feel */
-  will-change:opacity,filter;
+  transform:perspective(900px) translateY(60px) rotateX(6deg);
+  transform-origin:50% 0%;
+  transition:
+    opacity .65s cubic-bezier(.23,1,.32,1),
+    transform .65s cubic-bezier(.23,1,.32,1);
+  will-change:opacity,transform;
 }
-/* .revealed class removed — effect is now purely distance-based in JS */
+.fs-panel.visible{
+  opacity:1;
+  transform:perspective(900px) translateY(0) rotateX(0deg);
+}
+/* previous panel exits upward */
+.fs-panel.exiting{
+  opacity:0;
+  transform:perspective(900px) translateY(-40px) rotateX(-4deg) scale(.97);
+  transition:
+    opacity .45s cubic-bezier(.55,0,1,.45),
+    transform .45s cubic-bezier(.55,0,1,.45);
+}
+.fs-panel-inner{
+  width:100%;max-width:620px;
+  position:relative;
+}
 
-/* Drone SVG */
-#drone-svg{
+/* ── Floating ambient glow behind active card ── */
+.fs-panel-inner::before{
+  content:'';
   position:absolute;
-  width:70px;height:70px;
-  will-change:transform;
-  z-index:5;
+  inset:-30px -20px;
+  border-radius:36px;
+  background:radial-gradient(ellipse 80% 60% at 50% 50%, rgba(200,255,0,.055), transparent 70%);
+  opacity:0;
+  transform:scale(.9);
+  transition:opacity .8s ease, transform .8s ease;
   pointer-events:none;
-  filter:drop-shadow(0 0 12px rgba(200,255,0,.7));
+  z-index:-1;
+}
+.fs-panel.visible .fs-panel-inner::before{
+  opacity:1;
+  transform:scale(1);
 }
 
-/* Drone shadow on ground */
-#drone-shadow{
-  position:absolute;
-  width:90px;height:24px;
-  background:rgba(200,255,0,.08);
-  border-radius:50%;
-  filter:blur(10px);
-  will-change:transform;
-  z-index:3;
+/* mockup card wrapper */
+.fs-mockup-card{
+  background:rgba(255,255,255,.025);
+  border:1px solid rgba(200,255,0,.1);
+  border-radius:20px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.8),0 0 0 1px rgba(200,255,0,.05);
+  transition:box-shadow .4s, transform .4s cubic-bezier(.23,1,.32,1);
+  transform:translateZ(0);
+}
+.fs-panel.visible .fs-mockup-card{
+  animation:cardLand .7s cubic-bezier(.23,1,.32,1) forwards;
+}
+@keyframes cardLand{
+  0%  {box-shadow:0 60px 120px rgba(0,0,0,.9), 0 0 0 1px rgba(200,255,0,.03);}
+  60% {box-shadow:0 20px 60px rgba(0,0,0,.7),  0 0 40px rgba(200,255,0,.08);}
+  100%{box-shadow:0 40px 100px rgba(0,0,0,.8), 0 0 0 1px rgba(200,255,0,.05);}
+}
+.fs-mockup-card:hover{
+  box-shadow:0 40px 120px rgba(0,0,0,.85), 0 0 40px rgba(200,255,0,.08);
+  transform:translateY(-4px) scale(1.008);
+}
+
+/* mockup top bar — dots pop in */
+.fs-mockup-bar{
+  display:flex;align-items:center;gap:8px;
+  padding:14px 18px;
+  border-bottom:1px solid rgba(200,255,0,.07);
+  background:rgba(0,0,0,.4);
+}
+.fs-mockup-dot{
+  width:9px;height:9px;border-radius:50%;
+  transform:scale(0);
+  transition:transform .3s cubic-bezier(.34,1.56,.64,1);
+}
+.fs-panel.visible .fs-mockup-dot:nth-child(1){transform:scale(1);transition-delay:.15s}
+.fs-panel.visible .fs-mockup-dot:nth-child(2){transform:scale(1);transition-delay:.25s}
+.fs-panel.visible .fs-mockup-dot:nth-child(3){transform:scale(1);transition-delay:.35s}
+.fs-mockup-dot.r{background:#ff5f57}
+.fs-mockup-dot.y{background:#febc2e}
+.fs-mockup-dot.g{background:#28c840}
+.fs-mockup-title-bar{
+  flex:1;text-align:center;font-size:10px;letter-spacing:2px;
+  color:rgba(200,255,0,.3);text-transform:uppercase;
+  opacity:0;transform:translateY(4px);
+  transition:opacity .4s ease .5s, transform .4s ease .5s;
+}
+.fs-panel.visible .fs-mockup-title-bar{
+  opacity:1;transform:translateY(0);
+}
+.fs-mockup-content{
+  padding:28px;
+  position:relative;
+}
+/* scan-line sweep on reveal */
+.fs-mockup-content::after{
+  content:'';
+  position:absolute;inset:0;
+  background:linear-gradient(180deg,
+    transparent 0%,
+    rgba(200,255,0,.055) 50%,
+    transparent 100%);
+  height:60px;
+  top:-60px;
   pointer-events:none;
+  opacity:0;
+}
+.fs-panel.visible .fs-mockup-content::after{
+  animation:scanSweep .8s ease .3s forwards;
+}
+@keyframes scanSweep{
+  0%  {top:-60px; opacity:0}
+  20% {opacity:1}
+  80% {opacity:.6}
+  100%{top:calc(100% + 60px); opacity:0}
 }
 
-/* Scan circle that travels with drone */
-#drone-scan{
-  position:absolute;
-  width:260px;height:260px;
-  border-radius:50%;
-  background:radial-gradient(circle,rgba(200,255,0,.12) 0%,rgba(200,255,0,.05) 40%,transparent 75%);
-  will-change:transform;
-  z-index:4;
-  pointer-events:none;
+/* ── Staggered row/item reveal inside panels ── */
+/* Target direct children of mockup-content for cascade */
+.fs-mockup-content > *{
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .5s ease, transform .5s cubic-bezier(.23,1,.32,1);
+}
+.fs-panel.visible .fs-mockup-content > *:nth-child(1){opacity:1;transform:none;transition-delay:.3s}
+.fs-panel.visible .fs-mockup-content > *:nth-child(2){opacity:1;transform:none;transition-delay:.42s}
+.fs-panel.visible .fs-mockup-content > *:nth-child(3){opacity:1;transform:none;transition-delay:.54s}
+.fs-panel.visible .fs-mockup-content > *:nth-child(4){opacity:1;transform:none;transition-delay:.64s}
+.fs-panel.visible .fs-mockup-content > *:nth-child(5){opacity:1;transform:none;transition-delay:.72s}
+.fs-panel.visible .fs-mockup-content > *:nth-child(6){opacity:1;transform:none;transition-delay:.78s}
+
+/* description paragraph below card */
+.fs-panel p{
+  opacity:0;transform:translateY(14px);
+  transition:opacity .5s ease .7s, transform .5s cubic-bezier(.23,1,.32,1) .7s;
+}
+.fs-panel.visible p{opacity:1;transform:none;}
+
+/* ── Number counting animation helper ── */
+.fs-stat-num{
+  display:inline-block;
+  transition:transform .4s cubic-bezier(.23,1,.32,1);
+}
+.fs-panel.visible .fs-stat-num{
+  animation:numPop .5s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+.fs-panel.visible .fs-stat-num:nth-child(1){animation-delay:.5s}
+.fs-panel.visible .fs-stat-num:nth-child(2){animation-delay:.62s}
+.fs-panel.visible .fs-stat-num:nth-child(3){animation-delay:.74s}
+@keyframes numPop{
+  0%{transform:scale(.6) translateY(8px);opacity:0}
+  70%{transform:scale(1.12) translateY(-2px)}
+  100%{transform:scale(1) translateY(0);opacity:1}
 }
 
-/* outer pulse ring */
-#drone-pulse{
-  position:absolute;
-  width:260px;height:260px;
-  border-radius:50%;
-  border:1px solid rgba(200,255,0,.2);
-  will-change:transform;
-  z-index:3;
-  pointer-events:none;
-  animation:dronePulse 2s ease-in-out infinite;
+/* ── Table row cascade ── */
+.fs-row-anim{
+  opacity:0;transform:translateX(-14px);
+  transition:opacity .4s ease, transform .4s cubic-bezier(.23,1,.32,1);
 }
-@keyframes dronePulse{
-  0%,100%{opacity:.3;transform:translate(-50%,-50%) scale(1)}
-  50%{opacity:.7;transform:translate(-50%,-50%) scale(1.08)}
+.fs-panel.visible .fs-row-anim:nth-child(1){opacity:1;transform:none;transition-delay:.52s}
+.fs-panel.visible .fs-row-anim:nth-child(2){opacity:1;transform:none;transition-delay:.61s}
+.fs-panel.visible .fs-row-anim:nth-child(3){opacity:1;transform:none;transition-delay:.70s}
+.fs-panel.visible .fs-row-anim:nth-child(4){opacity:1;transform:none;transition-delay:.78s}
+.fs-panel.visible .fs-row-anim:nth-child(5){opacity:1;transform:none;transition-delay:.85s}
+
+/* ── Tile grid pop ── */
+.fs-tile-anim{
+  opacity:0;transform:scale(.8) translateY(10px);
+  transition:opacity .35s ease, transform .35s cubic-bezier(.34,1.56,.64,1);
 }
-/* we manage position ourselves via JS, override the keyframe transform after */
-#drone-pulse.positioned{animation:dronePulseOnly 2s ease-in-out infinite}
-@keyframes dronePulseOnly{
-  0%,100%{opacity:.3;box-shadow:none}
-  50%{opacity:.6;box-shadow:0 0 28px rgba(200,255,0,.2)}
+.fs-panel.visible .fs-tile-anim:nth-child(1){opacity:1;transform:none;transition-delay:.35s}
+.fs-panel.visible .fs-tile-anim:nth-child(2){opacity:1;transform:none;transition-delay:.43s}
+.fs-panel.visible .fs-tile-anim:nth-child(3){opacity:1;transform:none;transition-delay:.51s}
+.fs-panel.visible .fs-tile-anim:nth-child(4){opacity:1;transform:none;transition-delay:.59s}
+.fs-panel.visible .fs-tile-anim:nth-child(5){opacity:1;transform:none;transition-delay:.67s}
+.fs-panel.visible .fs-tile-anim:nth-child(6){opacity:1;transform:none;transition-delay:.75s}
+.fs-panel.visible .fs-tile-anim:nth-child(7){opacity:1;transform:none;transition-delay:.82s}
+.fs-panel.visible .fs-tile-anim:nth-child(8){opacity:1;transform:none;transition-delay:.88s}
+.fs-panel.visible .fs-tile-anim:nth-child(9){opacity:1;transform:none;transition-delay:.94s}
+
+/* ── Chat bubble slide-in ── */
+.fs-chat-anim{
+  opacity:0;transform:translateX(-20px) scale(.96);
+  transition:opacity .4s ease, transform .4s cubic-bezier(.23,1,.32,1);
+}
+.fs-panel.visible .fs-chat-anim:nth-child(1){opacity:1;transform:none;transition-delay:.35s}
+.fs-panel.visible .fs-chat-anim:nth-child(2){opacity:1;transform:none;transition-delay:.52s}
+.fs-panel.visible .fs-chat-anim:nth-child(3){opacity:1;transform:none;transition-delay:.68s}
+
+/* ── Member card flip-in ── */
+.fs-member-anim{
+  opacity:0;
+  transform:perspective(600px) rotateY(-18deg) translateX(-16px);
+  transition:opacity .5s ease, transform .5s cubic-bezier(.23,1,.32,1);
+}
+.fs-panel.visible .fs-member-anim:nth-child(1){opacity:1;transform:none;transition-delay:.36s}
+.fs-panel.visible .fs-member-anim:nth-child(2){opacity:1;transform:none;transition-delay:.52s}
+.fs-panel.visible .fs-member-anim:nth-child(3){opacity:1;transform:none;transition-delay:.68s}
+
+/* ── Variance card scale pop ── */
+.fs-var-anim{
+  opacity:0;transform:scale(.88) translateY(12px);
+  transition:opacity .4s ease, transform .4s cubic-bezier(.34,1.4,.64,1);
+}
+.fs-panel.visible .fs-var-anim:nth-child(1){opacity:1;transform:none;transition-delay:.38s}
+.fs-panel.visible .fs-var-anim:nth-child(2){opacity:1;transform:none;transition-delay:.54s}
+.fs-panel.visible .fs-var-anim:nth-child(3){opacity:1;transform:none;transition-delay:.68s}
+
+/* GET EARLY ACCESS CTA at bottom of feature section */
+.fs-cta-section{
+  text-align:center;padding:80px 52px;
+  border-top:1px solid rgba(200,255,0,.06);
+}
+.fs-cta-note{
+  display:block;font-size:12px;color:rgba(255,255,255,.3);
+  margin-top:16px;letter-spacing:.5px;
 }
 
-/* scroll nudge at bottom */
-.drone-scroll-nudge{
-  position:absolute;
-  bottom:36px;left:50%;transform:translateX(-50%);
-  font-size:10px;letter-spacing:4px;color:rgba(200,255,0,.25);
-  text-transform:uppercase;z-index:4;
-  transition:opacity .4s;
+/* Mobile: stack vertically */
+@media(max-width:900px){
+  .fs-body{grid-template-columns:1fr;}
+  .fs-left{position:relative;height:auto;padding:40px 20px;border-right:none;border-bottom:1px solid rgba(200,255,0,.07);}
+  .fs-right{padding:20px 20px 40px;}
+  .fs-panel{min-height:auto;padding:20px 0;}
+  .fs-header{padding:60px 20px 40px;}
+  .fs-cta-section{padding:60px 20px;}
+}
+@media(max-width:768px){
+  .fs-left{padding:32px 14px;}
+  .fs-right{padding:14px 14px 32px;}
+  .fs-feature-item{padding:14px 14px;}
+  .fs-mockup-content{padding:16px;}
 }
 
 /* ━━━━━ SITE ━━━━━ */
@@ -649,11 +1031,6 @@ body{
   .tilt-wrap{border-radius:10px}
   .ob{width:130px!important;height:48px!important}
   .mi{font-size:9px;letter-spacing:1.8px;padding:0 18px}
-  /* drone */
-  .drone-text{font-size:clamp(20px,5.5vw,32px);white-space:normal;max-width:86vw}
-  #drone-svg{width:50px;height:50px}
-  #drone-scan,#drone-pulse{width:180px;height:180px}
-  .drone-label{left:20px;top:32px}
   #grain{display:none}
   .orb{will-change:auto;animation:none;filter:blur(60px);opacity:.04}
   #prog{animation:none}
@@ -893,10 +1270,7 @@ body{
 .products-dots{display:flex;gap:8px;justify-content:center;margin-top:44px;}
 .pd{width:28px;height:3px;border-radius:3px;background:rgba(200,255,0,.2);transition:background .3s,width .3s;}
 .pd.act{background:var(--lime);width:44px;box-shadow:0 0 8px rgba(200,255,0,.5);}
-.drone-label-right{
-  position:absolute;top:48px;right:52px;
-  font-size:10px;letter-spacing:3px;color:rgba(255,255,255,.2);text-transform:uppercase;z-index:4;
-}
+
 
 /* ════ TOUCH OVERRIDES ════ */
 @media (hover:none) and (pointer:coarse){
@@ -909,7 +1283,7 @@ body{
   #products-section{padding:60px 20px}
   .products-track{grid-template-columns:1fr;gap:16px;max-width:420px;margin:0 auto;}
   .pcard{min-height:auto;padding:28px 24px}
-  .drone-label-right{display:none}
+
 }
 @media (min-width:769px) and (max-width:1024px){
   #live-hero{padding:100px 36px 60px}
@@ -973,7 +1347,7 @@ body{
   </div>
   <div class="nav-right" style="display:flex;gap:32px;align-items:center;">
     <a href="#live-hero"     class="nl">Home</a>
-    <a href="#about"    class="nl">About</a>
+    <a href="#features"    class="nl">Features</a>
     <a href="#products-section" class="nl">Products</a>
     <a href="#contact"  class="nl">Contact</a>
     <button class="btn" onclick="goTally()">Get Early Access</button>
@@ -1036,7 +1410,7 @@ body{
         <div class="hero-sub-card">
           <div class="hsc-icon">🛰</div>
           <h3 class="hsc-title">Real-Time Intelligence</h3>
-          <p class="hsc-body">Live drone &amp; satellite feeds analysed by AI to surface delays before they cost you.</p>
+          <p class="hsc-body">Live WhatsApp feeds analysed by AI to surface delays, material shortages, and issues before they cost you.</p>
         </div>
         <div class="hero-sub-card">
           <div class="hsc-icon">🔗</div>
@@ -1098,48 +1472,590 @@ body{
     </div>
   </section>
 
-  <!-- ★ DRONE ANIMATION SECTION ★ -->
-  <div class="drone-wrapper" id="drone-section">
-    <div class="drone-stage">
+  <!-- ★★★ FEATURE SHOWCASE (Sticky Scroll) ★★★ -->
+  <!-- ★★★ FEATURE SHOWCASE (Sticky Scroll) ★★★ -->
+  <section class="feature-showcase" id="features">
 
-      <div class="drone-label">Real-Time Intelligence</div>
-      <div class="drone-label-right">Miru AI · Scanning</div>
-
-      <!-- drone text chars injected by JS -->
-      <div class="drone-text" id="drone-text"></div>
-
-      <!-- Drone SVG — lime-glowing minimal quad -->
-      <svg id="drone-svg" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <!-- arms -->
-        <line x1="50" y1="12" x2="50" y2="88" stroke="rgba(200,255,0,.5)" stroke-width="2.5"/>
-        <line x1="12" y1="50" x2="88" y2="50" stroke="rgba(200,255,0,.5)" stroke-width="2.5"/>
-        <!-- rotor hubs -->
-        <g id="dr1" style="transform-origin:50px 12px">
-          <circle cx="50" cy="12" r="7" stroke="#c8ff00" stroke-width="1.5" fill="rgba(200,255,0,.08)"/>
-        </g>
-        <g id="dr2" style="transform-origin:50px 88px">
-          <circle cx="50" cy="88" r="7" stroke="#c8ff00" stroke-width="1.5" fill="rgba(200,255,0,.08)"/>
-        </g>
-        <g id="dr3" style="transform-origin:12px 50px">
-          <circle cx="12" cy="50" r="7" stroke="#c8ff00" stroke-width="1.5" fill="rgba(200,255,0,.08)"/>
-        </g>
-        <g id="dr4" style="transform-origin:88px 50px">
-          <circle cx="88" cy="50" r="7" stroke="#c8ff00" stroke-width="1.5" fill="rgba(200,255,0,.08)"/>
-        </g>
-        <!-- body core -->
-        <circle cx="50" cy="50" r="10" fill="#c8ff00"/>
-        <circle cx="50" cy="50" r="6" fill="#000"/>
-        <circle cx="50" cy="50" r="3" fill="#c8ff00"/>
-      </svg>
-
-      <div id="drone-shadow"></div>
-      <div id="drone-scan"></div>
-      <div id="drone-pulse"></div>
-
-      <div class="drone-scroll-nudge" id="drone-nudge">Scroll to reveal</div>
-
+    <div class="fs-header">
+      <span class="fs-eyebrow">What Miru Does</span>
+      <h2 class="fs-heading">Automated intelligence.<br><span class="acc">Built for site teams.</span></h2>
+      <p class="fs-sub">Structured reports, real-time follow-ups, and AI-powered monitoring — built for EPC construction teams managing live operations.</p>
     </div>
-  </div>
+
+    <div class="fs-body" id="fs-body">
+
+      <!-- LEFT: Sticky feature nav -->
+      <div class="fs-left" id="fs-left">
+        <div class="fs-section-label">GCs, PMCs &amp; Project Heads</div>
+
+        <div class="fs-feature-item active" data-index="0">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-chart">📊</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Cross-Site Dashboard</div>
+            <div class="fs-feat-desc">Portfolio-wide attendance, issues, and variance — without morning calls.</div>
+          </div>
+        </div>
+
+        <div class="fs-feature-item" data-index="1">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-scale">⚖️</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Plan vs Actuals Tracking</div>
+            <div class="fs-feat-desc">Spot variance before it becomes a site call.</div>
+          </div>
+        </div>
+
+        <div class="fs-section-label" style="margin-top:14px">All Users</div>
+
+        <div class="fs-feature-item" data-index="2">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-report">📋</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Instant Structured Reports</div>
+            <div class="fs-feat-desc">DPR, DLR, variance reports compiled from WhatsApp data. Zero manual effort.</div>
+          </div>
+        </div>
+
+        <div class="fs-feature-item" data-index="3">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon">
+            <div class="icon-mic-wrap">
+              <div class="icon-wave">
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Voice Note Support</div>
+            <div class="fs-feat-desc">Too busy to type? Voice notes captured and structured just like text.</div>
+          </div>
+        </div>
+
+        <div class="fs-feature-item" data-index="4">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-globe">🌐</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Multi-Lingual Support</div>
+            <div class="fs-feat-desc">Hindi, Telugu, English — all captured consistently.</div>
+          </div>
+        </div>
+
+        <div class="fs-section-label" style="margin-top:14px">Site Project Managers</div>
+
+        <div class="fs-feature-item" data-index="5">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-robot">🤖</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">AI Follow-Ups</div>
+            <div class="fs-feat-desc">Missing update detected — targeted DM sent. No manager follow-up needed.</div>
+          </div>
+        </div>
+
+        <div class="fs-feature-item" data-index="6">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-map">🗺️</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Work Front Mapping</div>
+            <div class="fs-feat-desc">Filter any report by work front, trade, or activity.</div>
+          </div>
+        </div>
+
+        <div class="fs-feature-item" data-index="7">
+          <div class="fs-feat-bar"></div>
+          <div class="fs-feat-icon"><span class="icon-person">👤</span></div>
+          <div class="fs-feat-text">
+            <div class="fs-feat-title">Smart Member Profiling</div>
+            <div class="fs-feat-desc">Role and context built in — ambiguous messages always resolve correctly.</div>
+          </div>
+        </div>
+
+        <div style="margin-top:28px">
+          <button class="btn" onclick="goTally()">Get Early Access →</button>
+        </div>
+      </div>
+
+      <!-- RIGHT: scrolling visual panels -->
+      <div class="fs-right" id="fs-right">
+
+        <!-- ═══ PANEL 0: Cross-Site Dashboard ═══ -->
+        <div class="fs-panel" data-panel="0">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div>
+                <div class="fs-mockup-dot y"></div>
+                <div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Cross-Site Dashboard · Miru AI</div>
+              </div>
+              <div class="fs-mockup-content">
+                <!-- stat cards -->
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px;">
+                  <div class="fs-stat-num" style="background:rgba(200,255,0,.07);border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px;">
+                    <div style="font-size:9px;letter-spacing:2px;color:rgba(200,255,0,.55);text-transform:uppercase;margin-bottom:6px;">Active Sites</div>
+                    <div style="font-size:26px;font-weight:700;color:#fff;">12</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.35);">↑ 2 this week</div>
+                  </div>
+                  <div class="fs-stat-num" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px;">
+                    <div style="font-size:9px;letter-spacing:2px;color:rgba(200,255,0,.55);text-transform:uppercase;margin-bottom:6px;">Workers Today</div>
+                    <div style="font-size:26px;font-weight:700;color:#fff;">1,340</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.35);">vs 1,292 yesterday</div>
+                  </div>
+                  <div class="fs-stat-num" style="background:rgba(255,60,60,.05);border:1px solid rgba(255,80,80,.15);border-radius:10px;padding:14px;">
+                    <div style="font-size:9px;letter-spacing:2px;color:rgba(255,100,100,.6);text-transform:uppercase;margin-bottom:6px;">Open Issues</div>
+                    <div style="font-size:26px;font-weight:700;color:#fff;">9</div>
+                    <div style="font-size:10px;color:rgba(255,100,100,.5);">4 critical</div>
+                  </div>
+                </div>
+                <!-- table -->
+                <div style="border-radius:10px;overflow:hidden;border:1px solid rgba(200,255,0,.08);">
+                  <div style="background:rgba(200,255,0,.06);padding:8px 12px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;font-size:9px;letter-spacing:1.5px;color:rgba(200,255,0,.5);text-transform:uppercase;">
+                    <span>Project</span><span>Status</span><span>Variance</span><span>Last Update</span>
+                  </div>
+                  <div class="fs-row-anim" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.75);">Kalpataru Heights — T3</span>
+                    <span style="color:rgba(200,255,0,.75);">On Track</span>
+                    <span style="color:rgba(255,255,255,.4);">0%</span>
+                    <span style="color:rgba(255,255,255,.3);font-size:10px;">8 min ago</span>
+                  </div>
+                  <div class="fs-row-anim" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:11px;align-items:center;background:rgba(255,255,255,.015);">
+                    <span style="color:rgba(255,255,255,.75);">Shapoorji Phase 2 — Block A</span>
+                    <span style="color:rgba(255,120,80,.8);">⚠ Delayed</span>
+                    <span style="color:rgba(255,120,80,.7);">+3d</span>
+                    <span style="color:rgba(255,255,255,.3);font-size:10px;">24 min ago</span>
+                  </div>
+                  <div class="fs-row-anim" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.75);">L&amp;T Civil — NH48 Flyover</span>
+                    <span style="color:rgba(200,255,0,.75);">On Track</span>
+                    <span style="color:rgba(255,255,255,.4);">-0.3%</span>
+                    <span style="color:rgba(255,255,255,.3);font-size:10px;">1 hr ago</span>
+                  </div>
+                  <div class="fs-row-anim" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:11px;align-items:center;background:rgba(255,255,255,.015);">
+                    <span style="color:rgba(255,255,255,.75);">Aditya Birla Township — MEP</span>
+                    <span style="color:rgba(255,120,80,.8);">Behind</span>
+                    <span style="color:rgba(255,120,80,.7);">Behind</span>
+                    <span style="color:rgba(255,255,255,.3);font-size:10px;">2 hr ago</span>
+                  </div>
+                  <div class="fs-row-anim" style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;padding:9px 12px;font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.75);">Godrej Aqua — GF Finishing</span>
+                    <span style="color:rgba(200,255,0,.75);">On Track</span>
+                    <span style="color:rgba(255,255,255,.4);">+0.5%</span>
+                    <span style="color:rgba(255,255,255,.3);font-size:10px;">3 hr ago</span>
+                  </div>
+                </div>
+                <div style="margin-top:10px;font-size:9px;color:rgba(200,255,0,.3);letter-spacing:2px;text-transform:uppercase;text-align:right;">● Live · No morning calls required</div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Attendance, open issues, plan vs actual variance — aggregated across all your sites. The independent signal you never had, built entirely from WhatsApp groups your site teams already use.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 1: Plan vs Actuals ═══ -->
+        <div class="fs-panel" data-panel="1">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Plan vs Actuals · Miru AI</div>
+              </div>
+              <div class="fs-mockup-content">
+                <div style="font-size:10px;font-weight:600;color:rgba(200,255,0,.6);letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;">Plan vs Actuals</div>
+
+                <!-- item 1 -->
+                <div class="fs-var-anim" style="border:1px solid rgba(200,255,0,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(200,255,0,.04);">
+                    <span style="font-size:12px;font-weight:600;color:#fff">Wing C · Level 8 Slab Pour</span>
+                    <span style="font-size:9px;border:1px solid rgba(200,255,0,.2);border-radius:20px;padding:2px 8px;color:rgba(200,255,0,.55);">Structural — Concrete</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 12px;align-items:center;">
+                    <div><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">TARGET</div><div style="font-size:13px;color:#fff;font-weight:600">140 m³</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 3</div></div>
+                    <div style="background:rgba(200,255,0,.75);color:#000;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-align:center;">−4 m³</div>
+                    <div style="text-align:right"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">ACTUAL</div><div style="font-size:13px;color:#fff;font-weight:600">136 m³</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 3</div></div>
+                  </div>
+                </div>
+
+                <!-- item 2 -->
+                <div class="fs-var-anim" style="border:1px solid rgba(200,255,0,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(200,255,0,.04);">
+                    <span style="font-size:12px;font-weight:600;color:#fff">Block D · Unit 802 — Electrical</span>
+                    <span style="font-size:9px;border:1px solid rgba(255,120,80,.25);border-radius:20px;padding:2px 8px;color:rgba(255,120,80,.65);">MEP — First Fix</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 12px;align-items:center;">
+                    <div><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">TARGET</div><div style="font-size:13px;color:#fff;font-weight:600">—</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 4</div></div>
+                    <div style="background:rgba(255,120,80,.8);color:#000;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-align:center;">Behind 2d</div>
+                    <div style="text-align:right"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">ACTUAL</div><div style="font-size:13px;color:#fff;font-weight:600">—</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 6</div></div>
+                  </div>
+                </div>
+
+                <!-- item 3 -->
+                <div class="fs-var-anim" style="border:1px solid rgba(200,255,0,.09);border-radius:10px;margin-bottom:10px;overflow:hidden;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:rgba(200,255,0,.04);">
+                    <span style="font-size:12px;font-weight:600;color:#fff">Podium · East Wing — Waterproofing</span>
+                    <span style="font-size:9px;border:1px solid rgba(80,220,150,.2);border-radius:20px;padding:2px 8px;color:rgba(80,220,150,.6);">Waterproofing</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 12px;align-items:center;">
+                    <div><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">TARGET</div><div style="font-size:13px;color:#fff;font-weight:600">520 sqm</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 2</div></div>
+                    <div style="background:rgba(80,220,150,.75);color:#000;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-align:center;">+40 sqm</div>
+                    <div style="text-align:right"><div style="font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:3px">ACTUAL</div><div style="font-size:13px;color:#fff;font-weight:600">560 sqm</div><div style="font-size:10px;color:rgba(255,255,255,.35)">May 2</div></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Compare planned targets against actuals in real time. Spot variance early, understand what's slipping and why — before it becomes a delay on the Gantt.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 2: Instant Reports ═══ -->
+        <div class="fs-panel" data-panel="2">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Daily Progress Report #067 · Miru AI</div>
+              </div>
+              <div class="fs-mockup-content">
+                <!-- highlights -->
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+                  <span style="font-size:10px;background:rgba(200,255,0,.08);border:1px solid rgba(200,255,0,.22);border-radius:20px;padding:4px 12px;color:rgba(200,255,0,.8);">● Site: On Track</span>
+                  <span style="font-size:10px;background:rgba(255,200,80,.06);border:1px solid rgba(255,200,80,.18);border-radius:20px;padding:4px 12px;color:rgba(255,200,80,.75);">⚠ 3 Critical · 2 Medium</span>
+                  <span style="font-size:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:20px;padding:4px 12px;color:rgba(255,255,255,.4);">318 Workers on site</span>
+                </div>
+                <!-- workfront table -->
+                <div style="font-size:10px;font-weight:600;color:rgba(200,255,0,.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Progress by Workfront</div>
+                <div style="border-radius:8px;overflow:hidden;margin-bottom:14px;">
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;background:rgba(200,255,0,.06);font-size:9px;letter-spacing:1px;color:rgba(200,255,0,.5);text-transform:uppercase;">
+                    <span>Zone</span><span>Activity</span><span>Status</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;background:rgba(200,255,0,.03);font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.65)">W1 · F4–F6</span>
+                    <span style="color:rgba(255,255,255,.5)">RCC Columns</span>
+                    <span style="color:rgba(200,255,0,.7);">Completed</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.65)">W2 · F3</span>
+                    <span style="color:rgba(255,255,255,.5)">Brick Masonry</span>
+                    <span style="color:rgba(100,160,255,.8);">In Progress</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;background:rgba(255,255,255,.015);font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.65)">W3</span>
+                    <span style="color:rgba(255,255,255,.5)">Slab Shuttering</span>
+                    <span style="color:rgba(100,160,255,.8);">In Progress</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.65)">W4 · F8</span>
+                    <span style="color:rgba(255,255,255,.5)">External Plaster</span>
+                    <span style="color:rgba(255,255,255,.35);">Planned</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;padding:7px 12px;background:rgba(255,255,255,.015);font-size:11px;align-items:center;">
+                    <span style="color:rgba(255,255,255,.65)">Basement</span>
+                    <span style="color:rgba(255,255,255,.5)">Waterproofing</span>
+                    <span style="color:rgba(255,100,80,.7);">Delayed</span>
+                  </div>
+                </div>
+                <!-- issues -->
+                <div style="font-size:10px;font-weight:600;color:rgba(200,255,0,.55);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;">Issues &amp; Blockers</div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:rgba(255,80,80,.8);flex-shrink:0;display:block;"></span>
+                  <span style="flex:2;color:rgba(255,255,255,.65);">Transit mixer breakdown — Gate 2</span>
+                  <span style="color:rgba(255,80,80,.8);font-size:10px;">Critical</span>
+                  <span style="color:rgba(255,200,80,.6);font-size:10px;">Open</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:11px;">
+                  <span style="width:8px;height:8px;border-radius:50%;background:rgba(255,180,60,.8);flex-shrink:0;display:block;"></span>
+                  <span style="flex:2;color:rgba(255,255,255,.65);">TMT steel — short by 3 bundles</span>
+                  <span style="color:rgba(255,180,60,.8);font-size:10px;">Medium</span>
+                  <span style="color:rgba(255,200,80,.6);font-size:10px;">Open</span>
+                </div>
+                <div style="margin-top:10px;font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;text-transform:uppercase;">Prepared by Miru AI · Export: PDF / XLSX</div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">DPR, DLR, Variance reports — compiled on demand from your WhatsApp data. No manual assembly, no formatting, no midnight scramble before review meetings.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 3: Voice Note Support ═══ -->
+        <div class="fs-panel" data-panel="3">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">WhatsApp Group · Site Update Feed</div>
+              </div>
+              <div class="fs-mockup-content">
+                <!-- chat messages -->
+                <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px;">
+
+                  <div class="fs-chat-anim" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:700;color:rgba(200,255,0,.7);margin-bottom:4px;">Arun (Foreman)</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">W3 slab shuttering done — checking levels now. Ready for concrete by 4pm if QC clears.</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">09:42 ✓✓</div>
+                  </div>
+
+                  <div class="fs-chat-anim" style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:700;color:rgba(100,180,255,.7);margin-bottom:5px;">Vikram (Supervisor) · Voice Note</div>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <span style="font-size:20px;flex-shrink:0;">🎙️</span>
+                      <div style="flex:1;height:3px;background:rgba(200,255,0,.15);border-radius:2px;">
+                        <div style="width:45%;height:100%;background:rgba(200,255,0,.65);border-radius:2px;"></div>
+                      </div>
+                      <span style="font-size:10px;color:rgba(255,255,255,.35);">0:38</span>
+                    </div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">09:55 ✓✓</div>
+                  </div>
+
+                </div>
+
+                <!-- Miru transcript card -->
+                <div style="border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px;background:rgba(200,255,0,.04);">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                    <span style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(200,255,0,.6);text-transform:uppercase;">Miru AI · Voice → Text</span>
+                    <span style="font-size:9px;color:rgba(255,255,255,.25);">Auto-structured</span>
+                  </div>
+                  <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.4);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Transcript · Vikram</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.78);line-height:1.65;">Gate 2 transit mixer is stuck — engine issue. Backup arranged, ETA 11:30. W3 pour may slip to 5pm. Boom pump still booked, no change on labour strength.</div>
+                  <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+                    <span style="font-size:9px;background:rgba(200,255,0,.1);border:1px solid rgba(200,255,0,.22);border-radius:20px;padding:2px 9px;color:rgba(200,255,0,.75);">W3 · Slab Pour</span>
+                    <span style="font-size:9px;background:rgba(255,120,80,.08);border:1px solid rgba(255,120,80,.2);border-radius:20px;padding:2px 9px;color:rgba(255,120,80,.75);">Risk · Delay</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Short on time to type? Voice note in your groups — captured and structured from your WhatsApp data, same as text. No app change or new habit required from site teams.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 4: Multi-Lingual ═══ -->
+        <div class="fs-panel" data-panel="4">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Multi-Lingual · Same Pipeline · Any Script</div>
+              </div>
+              <div class="fs-mockup-content">
+                <!-- Hindi messages -->
+                <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+                  <div class="fs-chat-anim" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:700;color:rgba(200,255,0,.6);margin-bottom:4px;">अरुण</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">W3 का शटरिंग हो गया है। QC देख ले तो 4 बजे तक कंक्रीट डाल सकते हैं।</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">09:42 ✓✓</div>
+                  </div>
+                  <div class="fs-chat-anim" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:700;color:rgba(100,180,255,.65);margin-bottom:4px;">विक्रम</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">Gate 2 का ट्रांजिट मिक्सर खराब हो गया। Backup आ रहा है 11:30 तक। Pour शायद 5 बजे होगा।</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">09:55 ✓✓</div>
+                  </div>
+                  <div class="fs-chat-anim" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;">
+                    <div style="font-size:10px;font-weight:700;color:rgba(255,180,80,.65);margin-bottom:4px;">प्रकाश (QC)</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">Level check done hai — slab ready hai. Jab bhi material aaye, hum ready hain.</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">10:03 ✓✓</div>
+                  </div>
+                </div>
+                <!-- Miru output -->
+                <div style="border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px;background:rgba(200,255,0,.04);">
+                  <div style="font-size:9px;font-weight:700;letter-spacing:2px;color:rgba(200,255,0,.55);text-transform:uppercase;margin-bottom:10px;">Miru AI · Structured Output</div>
+                  <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+                    <span style="font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid rgba(200,255,0,.45);color:rgba(200,255,0,.9);background:rgba(200,255,0,.08);">English</span>
+                    <span style="font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.35);">Hindi</span>
+                    <span style="font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.35);">Hinglish</span>
+                    <span style="font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.35);">Telugu</span>
+                  </div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.78);line-height:1.65;">W3 slab shuttering complete. Pour delayed to 17:00 — transit mixer breakdown at Gate 2, backup ETA 11:30. QC level check done; slab ready. Labour strength unchanged.</div>
+                  <div style="font-size:9px;color:rgba(200,255,0,.35);margin-top:8px;">● Updates read in context — whatever the language</div>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Your WhatsApp updates can be in English, Hindi, Hinglish, Telugu, or any regional language, and Miru interprets them all consistently into the same structured format.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 5: AI Follow-Ups ═══ -->
+        <div class="fs-panel" data-panel="5">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">AI Follow-Up · Miru Auto-DM</div>
+              </div>
+              <div class="fs-mockup-content">
+                <!-- original message -->
+                <div class="fs-chat-anim" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;margin-bottom:10px;">
+                  <div style="font-size:10px;font-weight:700;color:rgba(200,255,0,.65);margin-bottom:4px;">Arun (Foreman)</div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.5;">W3 slab casting done. Good finish. Ready for curing.</div>
+                  <div style="font-size:9px;color:rgba(255,255,255,.25);text-align:right;margin-top:4px;">17:12 ✓✓</div>
+                </div>
+                <!-- Miru detection banner -->
+                <div class="fs-chat-anim" style="background:rgba(255,200,80,.05);border:1px solid rgba(255,200,80,.2);border-radius:8px;padding:10px 12px;margin-bottom:12px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+                    <span style="font-size:10px;font-weight:700;color:rgba(200,255,0,.7);">Miru AI</span>
+                    <span style="font-size:8px;color:rgba(255,200,80,.65);letter-spacing:1px;text-transform:uppercase;">Why a Follow-Up</span>
+                  </div>
+                  <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;">No photos attached. Completion note for slab casting requires photographic evidence for QC records before curing begins.</div>
+                </div>
+                <!-- auto DM sent -->
+                <div class="fs-chat-anim" style="background:rgba(200,255,0,.05);border:1px solid rgba(200,255,0,.2);border-radius:10px;padding:14px;">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                    <span style="font-size:9px;letter-spacing:2px;color:rgba(200,255,0,.55);text-transform:uppercase;">Auto-DM Sent to Arun</span>
+                    <span style="font-size:8px;color:rgba(200,255,0,.4);">Miru AI · Auto-Sent</span>
+                  </div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.75);line-height:1.65;">Hi Arun, noted on W3 slab casting. Please share 2–3 photos of the slab surface before curing starts — needed for QC sign-off. Thanks.</div>
+                </div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">When Miru detects a missing update — completion note without photo, labour not reported, commitment without a deadline — it sends a targeted WhatsApp DM to the right person. No manager intervention needed.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 6: Work Front Mapping ═══ -->
+        <div class="fs-panel" data-panel="6">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Work Front Mapping · Miru AI</div>
+              </div>
+              <div class="fs-mockup-content">
+                <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+
+                  <div class="fs-tile-anim" style="background:rgba(200,255,0,.06);border:1px solid rgba(200,255,0,.2);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(200,255,0,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(200,255,0,.9);">6</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Wing A · 5F Slab</div>
+                    <div style="font-size:9px;color:rgba(200,255,0,.7);">Active</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(100,160,255,.04);border:1px solid rgba(100,160,255,.18);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(100,160,255,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(100,160,255,.9);">3</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Wing A · 4F Finishing</div>
+                    <div style="font-size:9px;color:rgba(100,160,255,.8);">In Progress</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(255,80,80,.04);border:1px solid rgba(255,80,80,.18);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(255,80,80,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,80,80,.9);">1</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Wing B · Unit 304</div>
+                    <div style="font-size:9px;color:rgba(255,80,80,.8);">⚠ Issue</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(80,220,120,.04);border:1px solid rgba(80,220,120,.18);border-radius:8px;padding:10px;">
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;">Wing B · Unit 210</div>
+                    <div style="font-size:9px;color:rgba(80,220,120,.8);">✓ Done</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(200,255,0,.06);border:1px solid rgba(200,255,0,.2);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(200,255,0,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(200,255,0,.9);">5</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Wing C · 3F Brick</div>
+                    <div style="font-size:9px;color:rgba(200,255,0,.7);">Active</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(100,160,255,.04);border:1px solid rgba(100,160,255,.18);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(100,160,255,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(100,160,255,.9);">2</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Basement · Waterproof</div>
+                    <div style="font-size:9px;color:rgba(100,160,255,.8);">In Progress</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(255,200,80,.04);border:1px solid rgba(255,200,80,.18);border-radius:8px;padding:10px;position:relative;">
+                    <div style="position:absolute;top:6px;right:8px;background:rgba(255,200,80,.15);border-radius:50%;width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(255,200,80,.9);">1</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;padding-right:18px;">Clubhouse · Tiling</div>
+                    <div style="font-size:9px;color:rgba(255,200,80,.8);">Inspection</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;">
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;">Gate Area · Paving</div>
+                    <div style="font-size:9px;color:rgba(255,255,255,.3);">No update</div>
+                  </div>
+
+                  <div class="fs-tile-anim" style="background:rgba(80,220,120,.04);border:1px solid rgba(80,220,120,.18);border-radius:8px;padding:10px;">
+                    <div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600;margin-bottom:4px;">STP Zone · Civil</div>
+                    <div style="font-size:9px;color:rgba(80,220,120,.8);">✓ Done</div>
+                  </div>
+
+                </div>
+                <div style="font-size:9px;color:rgba(255,255,255,.2);letter-spacing:2px;text-transform:uppercase;">Filter by: Work Front · Trade · Activity · Date</div>
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Slice reports by work front, trade, or activity. See exactly what's happening where — all inferred automatically from WhatsApp updates with zero manual tagging.</p>
+          </div>
+        </div>
+
+        <!-- ═══ PANEL 7: Smart Member Profiling ═══ -->
+        <div class="fs-panel" data-panel="7">
+          <div class="fs-panel-inner">
+            <div class="fs-mockup-card">
+              <div class="fs-mockup-bar">
+                <div class="fs-mockup-dot r"></div><div class="fs-mockup-dot y"></div><div class="fs-mockup-dot g"></div>
+                <div class="fs-mockup-title-bar">Smart Member Profiling · Miru AI</div>
+              </div>
+              <div class="fs-mockup-content">
+
+                <!-- member card 1 -->
+                <div class="fs-member-anim" style="border:1px solid rgba(200,255,0,.12);border-radius:10px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,.02);">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(200,255,0,.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:rgba(200,255,0,.85);flex-shrink:0;">A</div>
+                    <div style="flex:1;">
+                      <div style="font-size:13px;font-weight:700;color:#fff;">Arun Sharma</div>
+                      <div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,.35);">
+                        <span>Site Foreman</span><span>·</span><span>Civil &amp; Structural</span><span>·</span><span>Hindi</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:14px;">
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">54</div><div style="font-size:8px;color:rgba(255,255,255,.3);">updates</div></div>
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">3</div><div style="font-size:8px;color:rgba(255,255,255,.3);">issues</div></div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:rgba(200,255,0,.7);border-top:1px solid rgba(255,255,255,.05);padding-top:8px;">★ Reports labour at 8–9 AM consistently. Flags material issues before they escalate.</div>
+                </div>
+
+                <!-- member card 2 -->
+                <div class="fs-member-anim" style="border:1px solid rgba(255,180,60,.12);border-radius:10px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,.02);">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(255,180,60,.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:rgba(255,180,60,.85);flex-shrink:0;">V</div>
+                    <div style="flex:1;">
+                      <div style="font-size:13px;font-weight:700;color:#fff;">Vikram Nair</div>
+                      <div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,.35);">
+                        <span>Supervisor</span><span>·</span><span>Finishing Works</span><span>·</span><span>Malayalam</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:14px;">
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">38</div><div style="font-size:8px;color:rgba(255,255,255,.3);">updates</div></div>
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">5</div><div style="font-size:8px;color:rgba(255,255,255,.3);">missed</div></div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:rgba(255,180,60,.7);border-top:1px solid rgba(255,255,255,.05);padding-top:8px;">★ Commits targets reliably but follow-through rate is 68% — Miru flags delays early.</div>
+                </div>
+
+                <!-- member card 3 -->
+                <div class="fs-member-anim" style="border:1px solid rgba(100,200,255,.12);border-radius:10px;padding:14px;background:rgba(255,255,255,.02);">
+                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">
+                    <div style="width:34px;height:34px;border-radius:50%;background:rgba(100,200,255,.12);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:rgba(100,200,255,.85);flex-shrink:0;">P</div>
+                    <div style="flex:1;">
+                      <div style="font-size:13px;font-weight:700;color:#fff;">Prakash (QC)</div>
+                      <div style="display:flex;gap:8px;margin-top:3px;font-size:9px;color:rgba(255,255,255,.35);">
+                        <span>QC Inspector</span><span>·</span><span>Quality &amp; Safety</span><span>·</span><span>Tamil</span>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:14px;">
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">21</div><div style="font-size:8px;color:rgba(255,255,255,.3);">inspections</div></div>
+                      <div style="text-align:center;"><div style="font-size:14px;font-weight:700;color:#fff;">0</div><div style="font-size:8px;color:rgba(255,255,255,.3);">missed</div></div>
+                    </div>
+                  </div>
+                  <div style="font-size:11px;color:rgba(100,200,255,.7);border-top:1px solid rgba(255,255,255,.05);padding-top:8px;">★ Files inspection requests before noon, every time. Miru auto-assigns QC tags.</div>
+                </div>
+
+              </div>
+            </div>
+            <p style="margin-top:18px;font-size:13px;color:rgba(255,255,255,.4);line-height:1.7;">Role, trade, and work front context combined with conversation history — so ambiguous updates resolve correctly. A message means something different depending on who sent it.</p>
+          </div>
+        </div>
+
+      </div><!-- /fs-right -->
+    </div><!-- /fs-body -->
+
+    <div class="fs-cta-section">
+      <button class="btn" onclick="goTally()" style="font-size:15px;padding:16px 44px;border-radius:12px;">Get Early Access →</button>
+      <span class="fs-cta-note">No BIM. No hardware. Just WhatsApp.</span>
+    </div>
+
+  </section>
 
   <!-- S4 -->
   <div class="section">
@@ -1325,7 +2241,7 @@ window.addEventListener('load', function(){
   buildMQ('mq2',[...mq2w].reverse());
 
   /* ════ SIDE DOTS ════ */
-  const allSections=gsap.utils.toArray('#live-hero,.hero-text,#products-section,.drone-wrapper,.section');
+  const allSections=gsap.utils.toArray('#live-hero,.hero-text,#products-section,.feature-showcase,.section');
   const sideDots=document.querySelectorAll('.sd');
   allSections.forEach((sec,i)=>{
     ScrollTrigger.create({
@@ -1366,184 +2282,108 @@ window.addEventListener('load', function(){
     });
   }
 
-  /* ════════════════════════════════════
-     DRONE ANIMATION — raster scan trajectory
-  ════════════════════════════════════ */
-  const droneText = "Real-Time Site Intelligence";
-  const droneEl   = document.getElementById('drone-text');
-  const chars      = [];
+  /* ════ FEATURE SHOWCASE — sticky scroll ════ */
+  (function(){
+    const panels = document.querySelectorAll('.fs-panel');
+    const featureItems = document.querySelectorAll('.fs-feature-item');
 
-  // Build character spans
-  [...droneText].forEach(c=>{
-    const span=document.createElement('span');
-    span.className='drone-char';
-    span.textContent=c===''?'\u00A0':c;
-    droneEl.appendChild(span);
-    chars.push(span);
-  });
-
-  const droneSVG    = document.getElementById('drone-svg');
-  const droneShadow = document.getElementById('drone-shadow');
-  const droneScan   = document.getElementById('drone-scan');
-  const dronePulse  = document.getElementById('drone-pulse');
-  const droneNudge  = document.getElementById('drone-nudge');
-  const rotors      = [
-    document.getElementById('dr1'),
-    document.getElementById('dr2'),
-    document.getElementById('dr3'),
-    document.getElementById('dr4'),
-  ];
-
-  let scrollProg=0, animProg=0, rotorAngle=0;
-  let prevDX=0, prevDY=0;
-
-  ScrollTrigger.create({
-    trigger:'.drone-wrapper',
-    start:'top top',
-    end:'bottom bottom',
-    onUpdate:self=>{ scrollProg=self.progress; },
-  });
-
-  /* ── Raster scan trajectory ──
-     We compute the bounding box of the drone-text element,
-     then sweep the drone left→right across it in rows,
-     covering every character. The path is:
-       Phase 0 → fly in from left edge to text bbox left
-       Phase 1 → raster scan across text (multi-row)
-       Phase 2 → fly out to right edge
-  */
-  function getDronePath(p, stage){
-    const W = stage.offsetWidth;
-    const H = stage.offsetHeight;
-
-    // Text element bounding box relative to stage
-    const textEl = droneEl;
-    const textRect = textEl.getBoundingClientRect();
-    const stageRect = stage.getBoundingClientRect();
-
-    const tx = textRect.left - stageRect.left;
-    const ty = textRect.top  - stageRect.top;
-    const tw = textRect.width;
-    const th = textRect.height;
-
-    // Number of scan passes (rows): scan slightly above and below text
-    const rows = 5;
-    const margin = isMobile ? 30 : 50;
-    const scanTop    = ty - margin;
-    const scanBottom = ty + th + margin;
-    const scanLeft   = tx - margin;
-    const scanRight  = tx + tw + margin;
-    const scanHeight = scanBottom - scanTop;
-
-    // Phase fractions
-    const flyInEnd   = 0.08;
-    const scanEnd    = 0.90;
-    const flyOutEnd  = 1.00;
-
-    let x, y;
-
-    if(p <= flyInEnd){
-      // Fly in from left off-screen to scanLeft, hovering at scanTop+scanHeight*0.5
-      const t = p / flyInEnd;
-      const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out
-      x = -80 + ease * (scanLeft + 80);
-      y = H*0.5 + Math.sin(t*Math.PI)*(-H*0.08); // gentle arc down
-    }
-    else if(p <= scanEnd){
-      // Raster scan across text bbox
-      const t = (p - flyInEnd) / (scanEnd - flyInEnd);
-      // Which row are we on?
-      const rowF   = t * rows;
-      const rowIdx = Math.floor(rowF);
-      const rowT   = rowF - rowIdx; // 0..1 within current row
-
-      // Alternate direction each row (boustrophedon)
-      const goRight = rowIdx % 2 === 0;
-      const rowX = goRight
-        ? scanLeft + rowT * (scanRight - scanLeft)
-        : scanRight - rowT * (scanRight - scanLeft);
-      const rowY = scanTop + (rowIdx / (rows - 1)) * scanHeight;
-
-      x = rowX;
-      y = rowY;
-    }
-    else {
-      // Fly out to right off-screen
-      const t = (p - scanEnd) / (flyOutEnd - scanEnd);
-      const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t;
-      x = scanRight + ease * (W + 80 - scanRight);
-      y = H*0.5 + Math.sin((1-t)*Math.PI)*(-H*0.08);
+    function activateFeature(index){
+      featureItems.forEach((item, i) => {
+        const wasActive = item.classList.contains('active');
+        item.classList.toggle('active', i === index);
+        // Re-trigger icon animation by removing & re-adding active class on the icon
+        if(i === index && !wasActive){
+          const icon = item.querySelector('.fs-feat-icon');
+          if(icon){
+            icon.style.animation = 'none';
+            const animEl = icon.querySelector('[class^="icon-"], [class*=" icon-"]');
+            if(animEl){
+              // force reflow to restart CSS animation
+              void animEl.offsetWidth;
+              animEl.style.animationPlayState = 'running';
+            }
+            void icon.offsetWidth;
+          }
+          // Re-trigger wave bars
+          const waves = item.querySelectorAll('.icon-wave span');
+          waves.forEach(w => {
+            w.style.animation = 'none';
+            void w.offsetWidth;
+            w.style.animation = '';
+          });
+        }
+      });
     }
 
-    return {x, y};
-  }
+    let currentPanel = 0;
 
-  function renderDrone(){
-    requestAnimationFrame(renderDrone);
+    function activatePanel(index){
+      if(index === currentPanel && panels[index].classList.contains('visible')) return;
 
-    animProg += (scrollProg - animProg) * 0.055; // slightly slower lerp = smoother
+      // Exit previous
+      panels.forEach((panel, i) => {
+        if(i === currentPanel && i !== index){
+          panel.classList.add('exiting');
+          panel.classList.remove('visible');
+          setTimeout(() => panel.classList.remove('exiting'), 500);
+        }
+      });
 
-    const stage = document.querySelector('.drone-stage');
-    if(!stage) return;
+      // Re-trigger inner animations by briefly removing & restoring visible
+      const target = panels[index];
+      // Remove all animation classes from animated children so they replay
+      const animEls = target.querySelectorAll(
+        '.fs-stat-num,.fs-row-anim,.fs-tile-anim,.fs-chat-anim,.fs-member-anim,.fs-var-anim,.fs-mockup-content > *,.fs-panel p'
+      );
+      animEls.forEach(el => {
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = '';
+      });
+      // Also reset mockup-bar dots and title bar
+      target.querySelectorAll('.fs-mockup-dot,.fs-mockup-title-bar').forEach(el => {
+        el.style.transition = 'none';
+        void el.offsetWidth;
+        el.style.transition = '';
+      });
 
-    const pos = getDronePath(animProg, stage);
-    const rawX = pos.x;
-    const rawY = pos.y;
+      target.classList.add('visible');
+      currentPanel = index;
+      activateFeature(index);
+    }
 
-    // Velocity for tilt
-    const dx = rawX - prevDX;
-    const dy = rawY - prevDY;
-    const tiltAngle = Math.atan2(dy, dx) * 180 / Math.PI * 0.35; // subtle tilt
+    // Desktop: IntersectionObserver
+    if(!isMobile){
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            activatePanel(parseInt(entry.target.dataset.panel));
+          }
+        });
+      }, {threshold: 0.45, rootMargin: '-8% 0px -8% 0px'});
+      panels.forEach(panel => observer.observe(panel));
+    } else {
+      const mobileObs = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if(entry.isIntersecting){
+            activatePanel(parseInt(entry.target.dataset.panel));
+          }
+        });
+      }, {threshold: 0.4});
+      panels.forEach(panel => mobileObs.observe(panel));
+    }
 
-    // Move drone
-    droneSVG.style.transform = `translate(${rawX-35}px,${rawY-35}px) rotate(${tiltAngle}deg)`;
-
-    // Shadow
-    droneShadow.style.transform = `translate(${rawX-45}px,${rawY+32}px)`;
-    droneShadow.style.opacity = Math.min(1, 0.25 + animProg * 0.35);
-
-    // Scan & pulse
-    const sx = rawX - 130, sy = rawY - 130;
-    droneScan.style.transform = `translate(${sx}px,${sy}px)`;
-    dronePulse.style.left = rawX + 'px';
-    dronePulse.style.top  = rawY + 'px';
-
-    // Rotor spin
-    const speed = Math.hypot(dx, dy);
-    rotorAngle += Math.max(2, speed * 5);
-    rotors.forEach(r=>{
-      if(!r) return;
-      r.style.transform = `rotate(${rotorAngle}deg)`;
+    // Click left nav → scroll to panel
+    featureItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const idx = parseInt(item.dataset.index);
+        const panel = document.querySelector(`.fs-panel[data-panel="${idx}"]`);
+        if(panel) panel.scrollIntoView({behavior: 'smooth', block: 'center'});
+      });
     });
 
-    // Char reveal — light-source distance falloff
-    const radius = isMobile ? 100 : 150;
-    chars.forEach(ch=>{
-      const rect = ch.getBoundingClientRect();
-      const stageRect = stage.getBoundingClientRect();
-      const cx = rect.left + rect.width/2  - stageRect.left;
-      const cy = rect.top  + rect.height/2 - stageRect.top;
-      const dist = Math.hypot(cx - rawX, cy - rawY);
-      const t = Math.max(0, 1 - dist / radius);
-      const intensity = t * t * t; // cubic falloff = more dramatic reveal
-      // Keep revealed chars partially visible after drone passes
-      const currentOpacity = parseFloat(ch.style.opacity || 0);
-      const targetOpacity  = intensity;
-      // If drone was near and now moving away, fade more slowly
-      const newOpacity = targetOpacity > currentOpacity
-        ? targetOpacity
-        : currentOpacity * 0.92 + targetOpacity * 0.08;
-      ch.style.opacity = newOpacity;
-      ch.style.filter  = `blur(${(1 - newOpacity) * 6}px)`;
-    });
-
-    // Nudge
-    if(animProg > 0.04) droneNudge.style.opacity = '0';
-    else droneNudge.style.opacity = '1';
-
-    prevDX = rawX; prevDY = rawY;
-  }
-  renderDrone();
+    activatePanel(0);
+  })();
 
   /* ════ HERO TEXT SECTION REVEALS ════ */
   gsap.from('.hero-eyebrow',{
@@ -1587,10 +2427,10 @@ window.addEventListener('load', function(){
       scrollTrigger:{trigger:strip,start:'top 90%',once:true}});
   });
 
-  /* Drone label */
-  gsap.from('.drone-label',{
-    opacity:0,x:-20,duration:.9,ease:'expo.out',
-    scrollTrigger:{trigger:'.drone-wrapper',start:'top 80%',once:true}
+  /* ════ FEATURE SHOWCASE REVEALS ════ */
+  gsap.from('.fs-header',{
+    opacity:0,y:30,duration:1,ease:'expo.out',
+    scrollTrigger:{trigger:'.feature-showcase',start:'top 80%',once:true}
   });
 
   /* ════ INTRO TIMELINE ════ */
